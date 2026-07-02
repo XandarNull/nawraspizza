@@ -7,28 +7,37 @@ import {
   PIZZAS,
   DRINKS,
   SIZE_LABELS,
+  SIZE_SHORT,
   type PizzaSize,
   type CartItem,
   pizzaPrice,
   itemLabel,
   itemUnitPrice,
   cartTotal,
+  formatPrice,
 } from "@/lib/menu";
-import { Pizza as PizzaIcon, MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed } from "lucide-react";
+import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone } from "lucide-react";
+import nawrasLogo from "@/assets/nawras-logo.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Forno & Fuoco — Wood-fired pizza, delivered" },
-      { name: "description", content: "Order artisan wood-fired pizza and drinks. Pick your pies, share your address, we deliver hot." },
-      { property: "og:title", content: "Forno & Fuoco — Wood-fired pizza" },
-      { property: "og:description", content: "Order wood-fired pizza and drinks, straight to your door." },
+      { title: "مطعم بيتزا نورس — اطلب الآن" },
+      { name: "description", content: "اختر البيتزا والحجم والمشروبات، شارك موقعك، ونحن نوصلها ساخنة." },
+      { property: "og:title", content: "مطعم بيتزا نورس" },
+      { property: "og:description", content: "اطلب بيتزا نورس مع التوصيل." },
     ],
   }),
   component: OrderPage,
 });
 
 type Step = "menu" | "checkout" | "done";
+
+const BRANCHES = [
+  { name: "فرع الجامعة", phone: "07710217701" },
+  { name: "فرع العامرية", phone: "07700027625" },
+  { name: "فرع السيدية", phone: "07711171441" },
+];
 
 function OrderPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -112,7 +121,15 @@ function OrderPage() {
       {step === "done" && <DoneStep onNew={() => setStep("menu")} />}
 
       <footer className="border-t border-[color:var(--line)] mt-16 py-8 text-center text-sm text-[color:var(--ink-muted)]">
-        Forno &amp; Fuoco · Open 11:00 – 23:00 · <Link to="/dashboard" className="underline underline-offset-4 hover:text-[color:var(--tomato)]">Staff dashboard</Link>
+        <div className="mb-2">مطعم بيتزا نورس · مفتوح من ١١:٠٠ حتى ٢٣:٠٠</div>
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-3">
+          {BRANCHES.map((b) => (
+            <a key={b.phone} href={`tel:${b.phone}`} className="inline-flex items-center gap-1.5 hover:text-[color:var(--tomato)]">
+              <Phone className="w-3.5 h-3.5" /> {b.name} — {b.phone}
+            </a>
+          ))}
+        </div>
+        <Link to="/dashboard" className="underline underline-offset-4 hover:text-[color:var(--tomato)]">لوحة تحكم المطعم</Link>
       </footer>
     </div>
   );
@@ -121,14 +138,18 @@ function OrderPage() {
 function Header() {
   return (
     <header className="border-b border-[color:var(--line)] bg-[color:var(--cream)]/90 backdrop-blur sticky top-0 z-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full bg-[color:var(--tomato)] text-white grid place-items-center">
-            <PizzaIcon className="w-5 h-5" />
-          </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <img
+            src={nawrasLogo.url}
+            alt="شعار مطعم بيتزا نورس"
+            width={48}
+            height={48}
+            className="w-12 h-12 rounded-full object-cover ring-2 ring-[color:var(--tomato)]/50 shadow-sm"
+          />
           <div>
-            <div className="font-serif text-xl leading-none">Forno &amp; Fuoco</div>
-            <div className="text-[11px] uppercase tracking-widest text-[color:var(--ink-muted)]">Wood-fired since 1998</div>
+            <div className="font-serif text-xl leading-none">مطعم بيتزا نورس</div>
+            <div className="text-[11px] uppercase tracking-widest text-[color:var(--tomato)] mt-1">Nawras Pizza</div>
           </div>
         </div>
       </div>
@@ -153,57 +174,66 @@ function MenuStep(props: {
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-32">
       <section className="mb-10">
-        <p className="text-[color:var(--tomato)] uppercase tracking-[0.25em] text-xs font-semibold">Menu</p>
-        <h1 className="font-serif text-4xl sm:text-5xl mt-2 leading-tight">Pick your pizza,<br/>we&apos;ll fire the oven.</h1>
-        <p className="mt-3 text-[color:var(--ink-muted)] max-w-lg">Seven house recipes, three sizes. Add drinks, tell us where you are, and we&apos;ll bring it hot.</p>
+        <p className="text-[color:var(--tomato)] tracking-[0.25em] text-xs font-bold">القائمة</p>
+        <h1 className="font-serif text-4xl sm:text-5xl mt-2 leading-tight">اختر البيتزا،<br/>ونحن نوصلها إليك ساخنة.</h1>
+        <p className="mt-3 text-[color:var(--ink-muted)] max-w-lg">أربعة عشر نوعاً من البيتزا بثلاثة أحجام. أضف مشروبك، شاركنا عنوانك، ونصلك بسرعة.</p>
       </section>
 
       <section aria-labelledby="pizzas" className="mb-12">
         <div className="flex items-baseline justify-between mb-4">
-          <h2 id="pizzas" className="font-serif text-2xl">Pizzas</h2>
-          <span className="text-xs text-[color:var(--ink-muted)]">S · M · L</span>
+          <h2 id="pizzas" className="font-serif text-2xl">البيتزا</h2>
+          <span className="text-xs text-[color:var(--ink-muted)]">صغير · وسط · عائلي</span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {PIZZAS.map((p) => {
             const size = sizeById[p.id] ?? "M";
-            const price = pizzaPrice(p.basePrice, size);
+            const price = pizzaPrice(p.id, size);
             return (
-              <article key={p.id} className="bg-white border border-[color:var(--line)] rounded-2xl p-5 flex flex-col">
-                <div className="flex items-start justify-between gap-3">
+              <article key={p.id} className="bg-white border border-[color:var(--line)] rounded-2xl overflow-hidden flex flex-col">
+                <div className="relative aspect-[4/3] bg-[color:var(--cream)] overflow-hidden">
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    loading="lazy"
+                    width={768}
+                    height={576}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-5 flex flex-col flex-1">
                   <div>
                     <h3 className="font-serif text-xl leading-tight">{p.name}</h3>
                     <p className="text-sm text-[color:var(--ink-muted)] mt-1">{p.description}</p>
                   </div>
-                  <div className="text-3xl" aria-hidden>{p.emoji}</div>
-                </div>
 
-                <div className="mt-4 flex items-center gap-1 bg-[color:var(--cream)] rounded-full p-1 w-fit">
-                  {(Object.keys(SIZE_LABELS) as PizzaSize[]).map((s) => (
+                  <div className="mt-4 flex items-center gap-1 bg-[color:var(--cream)] rounded-full p-1 w-fit">
+                    {(Object.keys(SIZE_LABELS) as PizzaSize[]).map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setSizeById((prev) => ({ ...prev, [p.id]: s }))}
+                        className={
+                          "px-3 py-1 text-xs font-bold rounded-full transition-colors " +
+                          (size === s
+                            ? "bg-[color:var(--ink)] text-[color:var(--cream)]"
+                            : "text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]")
+                        }
+                        aria-pressed={size === s}
+                      >
+                        {SIZE_SHORT[s]}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-auto pt-4 flex items-center justify-between">
+                    <div className="font-serif text-2xl">{formatPrice(price)}</div>
                     <button
-                      key={s}
-                      type="button"
-                      onClick={() => setSizeById((prev) => ({ ...prev, [p.id]: s }))}
-                      className={
-                        "px-3 py-1 text-xs font-semibold rounded-full transition-colors " +
-                        (size === s
-                          ? "bg-[color:var(--ink)] text-[color:var(--cream)]"
-                          : "text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]")
-                      }
-                      aria-pressed={size === s}
+                      onClick={() => addPizza(p.id)}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)] transition-colors"
                     >
-                      {s}
+                      <Plus className="w-4 h-4" /> أضف
                     </button>
-                  ))}
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="font-serif text-2xl">${price.toFixed(2)}</div>
-                  <button
-                    onClick={() => addPizza(p.id)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-semibold hover:bg-[color:var(--tomato-dark)] transition-colors"
-                  >
-                    <Plus className="w-4 h-4" /> Add
-                  </button>
+                  </div>
                 </div>
               </article>
             );
@@ -212,7 +242,7 @@ function MenuStep(props: {
       </section>
 
       <section aria-labelledby="drinks" className="mb-12">
-        <h2 id="drinks" className="font-serif text-2xl mb-4">Drinks</h2>
+        <h2 id="drinks" className="font-serif text-2xl mb-4">المشروبات</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {DRINKS.map((d) => (
             <div key={d.id} className="bg-white border border-[color:var(--line)] rounded-xl px-4 py-3 flex items-center justify-between">
@@ -220,14 +250,14 @@ function MenuStep(props: {
                 <div className="text-2xl" aria-hidden>{d.emoji}</div>
                 <div>
                   <div className="font-medium">{d.name}</div>
-                  <div className="text-sm text-[color:var(--ink-muted)]">${d.price.toFixed(2)}</div>
+                  <div className="text-sm text-[color:var(--ink-muted)]">{formatPrice(d.price)}</div>
                 </div>
               </div>
               <button
                 onClick={() => addDrink(d.id)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-[color:var(--ink)] text-sm font-semibold hover:bg-[color:var(--ink)] hover:text-[color:var(--cream)] transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-[color:var(--ink)] text-sm font-bold hover:bg-[color:var(--ink)] hover:text-[color:var(--cream)] transition-colors"
               >
-                <Plus className="w-4 h-4" /> Add
+                <Plus className="w-4 h-4" /> أضف
               </button>
             </div>
           ))}
@@ -237,26 +267,26 @@ function MenuStep(props: {
       {cart.length > 0 && (
         <section className="bg-white border border-[color:var(--line)] rounded-2xl p-5">
           <h2 className="font-serif text-2xl mb-4 flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5" /> Your order
+            <ShoppingBag className="w-5 h-5" /> طلبك
           </h2>
           <ul className="divide-y divide-[color:var(--line)]">
             {cart.map((item, i) => (
               <li key={i} className="py-3 flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{itemLabel(item)}</div>
-                  <div className="text-sm text-[color:var(--ink-muted)]">${itemUnitPrice(item).toFixed(2)} each</div>
+                  <div className="text-sm text-[color:var(--ink-muted)]">{formatPrice(itemUnitPrice(item))} للواحد</div>
                 </div>
                 <div className="flex items-center gap-1 border border-[color:var(--line)] rounded-full">
-                  <button onClick={() => changeQty(i, -1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="Decrease">
+                  <button onClick={() => changeQty(i, -1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="تقليل">
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="w-6 text-center text-sm font-semibold">{item.qty}</span>
-                  <button onClick={() => changeQty(i, 1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="Increase">
+                  <span className="w-6 text-center text-sm font-bold">{item.qty}</span>
+                  <button onClick={() => changeQty(i, 1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="زيادة">
                     <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <div className="w-16 text-right font-semibold">${(itemUnitPrice(item) * item.qty).toFixed(2)}</div>
-                <button onClick={() => removeItem(i)} className="text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] p-1" aria-label="Remove">
+                <div className="w-24 text-left font-bold">{formatPrice(itemUnitPrice(item) * item.qty)}</div>
+                <button onClick={() => removeItem(i)} className="text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] p-1" aria-label="حذف">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </li>
@@ -269,14 +299,14 @@ function MenuStep(props: {
         <div className="fixed bottom-0 inset-x-0 z-30 border-t border-[color:var(--line)] bg-white/95 backdrop-blur">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
             <div>
-              <div className="text-xs text-[color:var(--ink-muted)] uppercase tracking-widest">Total · {totalCount} item{totalCount === 1 ? "" : "s"}</div>
-              <div className="font-serif text-2xl">${total.toFixed(2)}</div>
+              <div className="text-xs text-[color:var(--ink-muted)] tracking-widest">الإجمالي · {totalCount} قطعة</div>
+              <div className="font-serif text-2xl">{formatPrice(total)}</div>
             </div>
             <button
               onClick={onCheckout}
-              className="px-5 py-3 rounded-full bg-[color:var(--tomato)] text-white font-semibold hover:bg-[color:var(--tomato-dark)] transition-colors"
+              className="px-5 py-3 rounded-full bg-[color:var(--tomato)] text-white font-bold hover:bg-[color:var(--tomato-dark)] transition-colors"
             >
-              Continue to delivery
+              متابعة إلى التوصيل
             </button>
           </div>
         </div>
@@ -302,7 +332,7 @@ function CheckoutStep(props: {
 
   const locate = () => {
     if (!("geolocation" in navigator)) {
-      toast.error("GPS not available on this device");
+      toast.error("خدمة الموقع غير متاحة على هذا الجهاز");
       return;
     }
     setLocating(true);
@@ -310,11 +340,11 @@ function CheckoutStep(props: {
       (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);
-        toast.success("GPS location captured");
+        toast.success("تم تسجيل الموقع");
       },
       (err) => {
         setLocating(false);
-        toast.error(err.message || "Could not get GPS location");
+        toast.error(err.message || "تعذّر الحصول على الموقع");
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
@@ -323,7 +353,7 @@ function CheckoutStep(props: {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim() || !address.trim()) {
-      toast.error("Please fill name, phone and address");
+      toast.error("يرجى إدخال الاسم والهاتف والعنوان");
       return;
     }
     setSubmitting(true);
@@ -349,19 +379,19 @@ function CheckoutStep(props: {
 
   return (
     <main className="max-w-2xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-      <button onClick={onBack} className="text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--ink)] mb-4">← Back to menu</button>
-      <h1 className="font-serif text-4xl">Where to?</h1>
-      <p className="text-[color:var(--ink-muted)] mt-2">Tell us your address and share your GPS so the driver finds you fast.</p>
+      <button onClick={onBack} className="text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--ink)] mb-4">→ العودة إلى القائمة</button>
+      <h1 className="font-serif text-4xl">أين نوصل الطلب؟</h1>
+      <p className="text-[color:var(--ink-muted)] mt-2">أدخل عنوانك وشارك موقعك ليصلك السائق بسرعة.</p>
 
       <form onSubmit={submit} className="mt-8 space-y-5">
-        <Field label="Your name" required>
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required className="input" placeholder="Maria Rossi" />
+        <Field label="الاسم" required>
+          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required className="input" placeholder="محمد علي" />
         </Field>
-        <Field label="Phone" required>
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} required className="input" placeholder="+1 555 010 0123" inputMode="tel" />
+        <Field label="رقم الهاتف" required>
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} required className="input" placeholder="07XX XXX XXXX" inputMode="tel" />
         </Field>
-        <Field label="Delivery address" required>
-          <textarea value={address} onChange={(e) => setAddress(e.target.value)} maxLength={300} required className="input min-h-[80px]" placeholder="Street, number, floor, city" />
+        <Field label="عنوان التوصيل" required>
+          <textarea value={address} onChange={(e) => setAddress(e.target.value)} maxLength={300} required className="input min-h-[80px]" placeholder="المحافظة، المنطقة، الشارع، رقم الدار" />
         </Field>
 
         <div className="rounded-2xl border border-[color:var(--line)] bg-white p-4">
@@ -369,39 +399,39 @@ function CheckoutStep(props: {
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-[color:var(--tomato)]" />
               <div>
-                <div className="font-medium">GPS location</div>
+                <div className="font-bold">الموقع الجغرافي (GPS)</div>
                 <div className="text-sm text-[color:var(--ink-muted)]">
-                  {coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : "Not shared yet"}
+                  {coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : "لم يُشارَك بعد"}
                 </div>
               </div>
             </div>
-            <button type="button" onClick={locate} disabled={locating} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-[color:var(--ink)] text-sm font-semibold hover:bg-[color:var(--ink)] hover:text-[color:var(--cream)] transition-colors disabled:opacity-50">
-              <LocateFixed className="w-4 h-4" /> {locating ? "Locating…" : coords ? "Update" : "Share GPS"}
+            <button type="button" onClick={locate} disabled={locating} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-[color:var(--ink)] text-sm font-bold hover:bg-[color:var(--ink)] hover:text-[color:var(--cream)] transition-colors disabled:opacity-50">
+              <LocateFixed className="w-4 h-4" /> {locating ? "جارِ التحديد…" : coords ? "تحديث" : "شارك الموقع"}
             </button>
           </div>
         </div>
 
-        <Field label="Notes (optional)">
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} className="input min-h-[60px]" placeholder="Ring the top bell, no onions on pizza 2…" />
+        <Field label="ملاحظات (اختياري)">
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} className="input min-h-[60px]" placeholder="اضغط الجرس، بدون بصل على البيتزا الثانية…" />
         </Field>
 
         <div className="rounded-2xl bg-[color:var(--ink)] text-[color:var(--cream)] p-5">
           <div className="flex items-baseline justify-between">
-            <span className="uppercase tracking-widest text-xs">Total</span>
-            <span className="font-serif text-3xl">${total.toFixed(2)}</span>
+            <span className="tracking-widest text-xs">الإجمالي</span>
+            <span className="font-serif text-3xl">{formatPrice(total)}</span>
           </div>
           <ul className="mt-3 text-sm space-y-1 text-[color:var(--cream)]/80">
             {cart.map((i, k) => (
               <li key={k} className="flex justify-between gap-2">
                 <span className="truncate">{i.qty}× {itemLabel(i)}</span>
-                <span>${(itemUnitPrice(i) * i.qty).toFixed(2)}</span>
+                <span>{formatPrice(itemUnitPrice(i) * i.qty)}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <button type="submit" disabled={submitting || cart.length === 0} className="w-full py-3.5 rounded-full bg-[color:var(--tomato)] text-white font-semibold hover:bg-[color:var(--tomato-dark)] transition-colors disabled:opacity-60">
-          {submitting ? "Placing order…" : "Place order"}
+        <button type="submit" disabled={submitting || cart.length === 0} className="w-full py-3.5 rounded-full bg-[color:var(--tomato)] text-white font-bold hover:bg-[color:var(--tomato-dark)] transition-colors disabled:opacity-60">
+          {submitting ? "جارِ إرسال الطلب…" : "تأكيد الطلب"}
         </button>
       </form>
     </main>
@@ -411,7 +441,7 @@ function CheckoutStep(props: {
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-sm font-semibold">
+      <span className="text-sm font-bold">
         {label} {required && <span className="text-[color:var(--tomato)]">*</span>}
       </span>
       <div className="mt-1.5">{children}</div>
@@ -423,10 +453,10 @@ function DoneStep({ onNew }: { onNew: () => void }) {
   return (
     <main className="max-w-xl mx-auto px-4 sm:px-6 pt-16 pb-16 text-center">
       <div className="text-6xl mb-4">🍕</div>
-      <h1 className="font-serif text-4xl">Order received!</h1>
-      <p className="mt-3 text-[color:var(--ink-muted)]">The kitchen has your order. We&apos;ll call you if anything comes up.</p>
-      <button onClick={onNew} className="mt-8 inline-flex px-5 py-3 rounded-full bg-[color:var(--tomato)] text-white font-semibold hover:bg-[color:var(--tomato-dark)] transition-colors">
-        Order again
+      <h1 className="font-serif text-4xl">تم استلام طلبك!</h1>
+      <p className="mt-3 text-[color:var(--ink-muted)]">وصل الطلب إلى المطبخ. سنتصل بك إذا احتجنا لأي شيء.</p>
+      <button onClick={onNew} className="mt-8 inline-flex px-5 py-3 rounded-full bg-[color:var(--tomato)] text-white font-bold hover:bg-[color:var(--tomato-dark)] transition-colors">
+        اطلب مرة أخرى
       </button>
     </main>
   );
