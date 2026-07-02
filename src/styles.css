@@ -2,6 +2,47 @@
 @source "../src";
 @import "tw-animate-css";
 
+@theme {
+  --font-serif: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --cream: #fbf5ea;
+  --ink: #1f1a15;
+  --ink-muted: #6b6154;
+  --tomato: #c9351f;
+  --tomato-dark: #a02513;
+  --line: #ebe1cf;
+}
+
+html, body {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-serif {
+  font-family: "Fraunces", ui-serif, Georgia, serif;
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 50;
+  letter-spacing: -0.01em;
+}
+
+.input {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: white;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus {
+  border-color: var(--tomato);
+  box-shadow: 0 0 0 3px rgba(201, 53, 31, 0.15);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /*
