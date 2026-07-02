@@ -1,33 +1,64 @@
+import pizzaMixed from "@/assets/pizza-mixed.jpg";
+import pizzaShawarmaMeat from "@/assets/pizza-shawarma-meat.jpg";
+import pizzaShawarmaChicken from "@/assets/pizza-shawarma-chicken.jpg";
+import pizzaKebab from "@/assets/pizza-kebab.jpg";
+import pizzaSmokedBeef from "@/assets/pizza-smoked-beef.jpg";
+import pizzaPepperoni from "@/assets/pizza-pepperoni.jpg";
+import pizzaSalami from "@/assets/pizza-salami.jpg";
+import pizzaTurkey from "@/assets/pizza-turkey.jpg";
+import pizzaSauce from "@/assets/pizza-sauce.jpg";
+import pizzaMushroom from "@/assets/pizza-mushroom.jpg";
+import pizzaVeggie from "@/assets/pizza-veggie.jpg";
+import pizzaMargherita from "@/assets/pizza-margherita.jpg";
+import pizzaPistachio from "@/assets/pizza-pistachio.jpg";
+import pizzaHoney from "@/assets/pizza-honey.jpg";
+
 export type PizzaSize = "S" | "M" | "L";
 
 export const SIZE_LABELS: Record<PizzaSize, string> = {
-  S: 'Small (10")',
-  M: 'Medium (12")',
-  L: 'Large (14")',
+  S: "صغير",
+  M: "وسط",
+  L: "كبير (عائلي)",
 };
 
-export const SIZE_MULTIPLIER: Record<PizzaSize, number> = {
-  S: 1,
-  M: 1.3,
-  L: 1.6,
+export const SIZE_SHORT: Record<PizzaSize, string> = {
+  S: "صغير",
+  M: "وسط",
+  L: "عائلي",
 };
+
+export const CURRENCY = "د.ع";
+
+export function formatPrice(n: number): string {
+  return `${n.toLocaleString("en-US")} ${CURRENCY}`;
+}
 
 export type Pizza = {
   id: string;
-  name: string;
-  description: string;
-  basePrice: number; // price for Small
-  emoji: string;
+  name: string; // Arabic
+  description: string; // Arabic
+  prices: Record<PizzaSize, number>;
+  image: string;
 };
 
+const STANDARD = { S: 5000, M: 7000, L: 10000 } as const;
+const BASIC = { S: 4000, M: 6000, L: 8000 } as const;
+
 export const PIZZAS: Pizza[] = [
-  { id: "margherita", name: "Margherita", description: "Tomato, fresh mozzarella, basil", basePrice: 9, emoji: "🍅" },
-  { id: "pepperoni", name: "Pepperoni", description: "Tomato, mozzarella, spicy pepperoni", basePrice: 11, emoji: "🌶️" },
-  { id: "quattro", name: "Quattro Formaggi", description: "Mozzarella, gorgonzola, parmesan, fontina", basePrice: 12, emoji: "🧀" },
-  { id: "veggie", name: "Garden Veggie", description: "Peppers, olives, onion, mushrooms, corn", basePrice: 11, emoji: "🥬" },
-  { id: "hawaiian", name: "Hawaiian", description: "Ham, pineapple, mozzarella", basePrice: 11, emoji: "🍍" },
-  { id: "bbq", name: "BBQ Chicken", description: "Chicken, red onion, BBQ sauce, mozzarella", basePrice: 12, emoji: "🍗" },
-  { id: "diavola", name: "Diavola", description: "Spicy salami, chili, mozzarella, tomato", basePrice: 12, emoji: "🔥" },
+  { id: "mixed",            name: "مشكل",              description: "لحم، فليفلة، زيتون، فطر وجبن موزاريلا",       prices: { ...STANDARD }, image: pizzaMixed },
+  { id: "shawarma-meat",    name: "شاورما لحم",         description: "شاورما لحم متبّلة مع البصل والبقدونس",         prices: { ...STANDARD }, image: pizzaShawarmaMeat },
+  { id: "shawarma-chicken", name: "شاورما دجاج",        description: "شاورما دجاج مع صوص الثوم والبقدونس",           prices: { ...STANDARD }, image: pizzaShawarmaChicken },
+  { id: "kebab",            name: "كباب لحم",           description: "قطع كباب لحم مشوية مع الطماطم والبصل",         prices: { ...STANDARD }, image: pizzaKebab },
+  { id: "smoked-beef",      name: "شرائح لحم مدخّن",    description: "شرائح لحم بقر مدخّن مع الجرجير والموزاريلا",   prices: { ...STANDARD }, image: pizzaSmokedBeef },
+  { id: "pepperoni",        name: "بيروني",             description: "شرائح البيبروني الكلاسيكية مع جبن موزاريلا",  prices: { ...STANDARD }, image: pizzaPepperoni },
+  { id: "salami",           name: "سلامي",              description: "سلامي بقري مع صلصة الطماطم وموزاريلا",         prices: { ...STANDARD }, image: pizzaSalami },
+  { id: "turkey",           name: "حبش",                description: "شرائح صدر حبش مدخّن مع الفطر والذرة",          prices: { ...STANDARD }, image: pizzaTurkey },
+  { id: "sauce",            name: "صوص",                description: "صلصة طماطم غنية بالثوم والأعشاب والموزاريلا",  prices: { ...STANDARD }, image: pizzaSauce },
+  { id: "mushroom",         name: "فطر",                description: "فطر مقلي مع الموزاريلا والزعتر",              prices: { ...STANDARD }, image: pizzaMushroom },
+  { id: "veggie",           name: "خضار",               description: "فليفلة، بصل، زيتون، ذرة، طماطم وفطر",           prices: { ...BASIC },    image: pizzaVeggie },
+  { id: "margherita",       name: "مارغريتا",           description: "موزاريلا طازجة، صلصة طماطم وريحان",            prices: { ...BASIC },    image: pizzaMargherita },
+  { id: "pistachio",        name: "بستاشيو",            description: "جبن أبيض حلو مع فستق مطحون وماء ورد",          prices: { ...STANDARD }, image: pizzaPistachio },
+  { id: "honey",            name: "عسلية",              description: "عسل، جبن أبيض، جوز وسمسم — بيتزا حلوة",         prices: { ...STANDARD }, image: pizzaHoney },
 ];
 
 export type Drink = {
@@ -38,16 +69,12 @@ export type Drink = {
 };
 
 export const DRINKS: Drink[] = [
-  { id: "coke", name: "Coca-Cola 330ml", price: 2.5, emoji: "🥤" },
-  { id: "sprite", name: "Sprite 330ml", price: 2.5, emoji: "🥤" },
-  { id: "water", name: "Still Water 500ml", price: 1.5, emoji: "💧" },
-  { id: "beer", name: "Craft Beer 330ml", price: 4, emoji: "🍺" },
-  { id: "juice", name: "Orange Juice 250ml", price: 3, emoji: "🍊" },
+  { id: "pepsi",  name: "بيبسي ٣٣٠ مل",           price: 1000, emoji: "🥤" },
+  { id: "seven",  name: "سفن أب ٣٣٠ مل",          price: 1000, emoji: "🥤" },
+  { id: "miranda",name: "ميراندا برتقال ٣٣٠ مل",  price: 1000, emoji: "🍊" },
+  { id: "water",  name: "ماء ٥٠٠ مل",             price: 500,  emoji: "💧" },
+  { id: "ayran",  name: "شنينة (لبن)",             price: 1500, emoji: "🥛" },
 ];
-
-export function pizzaPrice(basePrice: number, size: PizzaSize) {
-  return Math.round(basePrice * SIZE_MULTIPLIER[size] * 100) / 100;
-}
 
 export type CartPizza = {
   kind: "pizza";
@@ -64,24 +91,26 @@ export type CartDrink = {
 
 export type CartItem = CartPizza | CartDrink;
 
+export function pizzaPrice(pizzaId: string, size: PizzaSize): number {
+  const p = PIZZAS.find((x) => x.id === pizzaId);
+  return p ? p.prices[size] : 0;
+}
+
 export function itemLabel(item: CartItem): string {
   if (item.kind === "pizza") {
     const p = PIZZAS.find((x) => x.id === item.pizzaId);
-    return `${p?.name ?? "Pizza"} · ${SIZE_LABELS[item.size]}`;
+    return `${p?.name ?? "بيتزا"} · ${SIZE_LABELS[item.size]}`;
   }
   const d = DRINKS.find((x) => x.id === item.drinkId);
-  return d?.name ?? "Drink";
+  return d?.name ?? "مشروب";
 }
 
 export function itemUnitPrice(item: CartItem): number {
-  if (item.kind === "pizza") {
-    const p = PIZZAS.find((x) => x.id === item.pizzaId);
-    return p ? pizzaPrice(p.basePrice, item.size) : 0;
-  }
+  if (item.kind === "pizza") return pizzaPrice(item.pizzaId, item.size);
   const d = DRINKS.find((x) => x.id === item.drinkId);
   return d?.price ?? 0;
 }
 
 export function cartTotal(items: CartItem[]): number {
-  return Math.round(items.reduce((sum, i) => sum + itemUnitPrice(i) * i.qty, 0) * 100) / 100;
+  return items.reduce((sum, i) => sum + itemUnitPrice(i) * i.qty, 0);
 }

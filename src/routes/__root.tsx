@@ -77,10 +77,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Forno & Fuoco — Wood-fired pizza, delivered" },
-      { name: "description", content: "Order wood-fired pizza and drinks. Seven signature pies, three sizes, delivered hot." },
-      { property: "og:title", content: "Forno & Fuoco" },
-      { property: "og:description", content: "Wood-fired pizza and drinks, delivered hot." },
+      { title: "مطعم بيتزا نورس — Nawras Pizza" },
+      { name: "description", content: "اطلب بيتزا نورس مع التوصيل. اختر نوع البيتزا والحجم والمشروبات." },
+      { property: "og:title", content: "مطعم بيتزا نورس" },
+      { property: "og:description", content: "بيتزا نورس — توصيل ساخن إلى باب البيت." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -91,7 +91,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Amiri:wght@400;700&display=swap",
       },
     ],
   }),
@@ -103,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl">
       <head>
         <HeadContent />
       </head>
