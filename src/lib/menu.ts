@@ -10,8 +10,6 @@ import pizzaSauce from "@/assets/pizza-sauce.jpg";
 import pizzaMushroom from "@/assets/pizza-mushroom.jpg";
 import pizzaVeggie from "@/assets/pizza-veggie.jpg";
 import pizzaMargherita from "@/assets/pizza-margherita.jpg";
-import pizzaPistachio from "@/assets/pizza-pistachio.jpg";
-import pizzaHoney from "@/assets/pizza-honey.jpg";
 
 export type PizzaSize = "S" | "M" | "L";
 
