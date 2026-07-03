@@ -10,8 +10,6 @@ import pizzaSauce from "@/assets/pizza-sauce.jpg";
 import pizzaMushroom from "@/assets/pizza-mushroom.jpg";
 import pizzaVeggie from "@/assets/pizza-veggie.jpg";
 import pizzaMargherita from "@/assets/pizza-margherita.jpg";
-import pizzaPistachio from "@/assets/pizza-pistachio.jpg";
-import pizzaHoney from "@/assets/pizza-honey.jpg";
 
 export type PizzaSize = "S" | "M" | "L";
 
@@ -50,15 +48,13 @@ export const PIZZAS: Pizza[] = [
   { id: "shawarma-chicken", name: "شاورما دجاج",        description: "شاورما دجاج مع صوص الثوم والبقدونس",           prices: { ...STANDARD }, image: pizzaShawarmaChicken },
   { id: "kebab",            name: "كباب لحم",           description: "قطع كباب لحم مشوية مع الطماطم والبصل",         prices: { ...STANDARD }, image: pizzaKebab },
   { id: "smoked-beef",      name: "شرائح لحم مدخّن",    description: "شرائح لحم بقر مدخّن مع الجرجير والموزاريلا",   prices: { ...STANDARD }, image: pizzaSmokedBeef },
-  { id: "pepperoni",        name: "بيروني",             description: "شرائح البيبروني الكلاسيكية مع جبن موزاريلا",  prices: { ...STANDARD }, image: pizzaPepperoni },
+  { id: "pepperoni",        name: "ببروني",             description: "شرائح البيبروني الكلاسيكية مع جبن موزاريلا",  prices: { ...STANDARD }, image: pizzaPepperoni },
   { id: "salami",           name: "سلامي",              description: "سلامي بقري مع صلصة الطماطم وموزاريلا",         prices: { ...STANDARD }, image: pizzaSalami },
   { id: "turkey",           name: "حبش",                description: "شرائح صدر حبش مدخّن مع الفطر والذرة",          prices: { ...STANDARD }, image: pizzaTurkey },
-  { id: "sauce",            name: "صوص",                description: "صلصة طماطم غنية بالثوم والأعشاب والموزاريلا",  prices: { ...STANDARD }, image: pizzaSauce },
+  { id: "sauce",            name: "صوصج",               description: "صلصة طماطم غنية بالثوم والأعشاب والموزاريلا",  prices: { ...STANDARD }, image: pizzaSauce },
   { id: "mushroom",         name: "فطر",                description: "فطر مقلي مع الموزاريلا والزعتر",              prices: { ...STANDARD }, image: pizzaMushroom },
   { id: "veggie",           name: "خضار",               description: "فليفلة، بصل، زيتون، ذرة، طماطم وفطر",           prices: { ...BASIC },    image: pizzaVeggie },
   { id: "margherita",       name: "مارغريتا",           description: "موزاريلا طازجة، صلصة طماطم وريحان",            prices: { ...BASIC },    image: pizzaMargherita },
-  { id: "pistachio",        name: "بستاشيو",            description: "جبن أبيض حلو مع فستق مطحون وماء ورد",          prices: { ...STANDARD }, image: pizzaPistachio },
-  { id: "honey",            name: "عسلية",              description: "عسل، جبن أبيض، جوز وسمسم — بيتزا حلوة",         prices: { ...STANDARD }, image: pizzaHoney },
 ];
 
 export type Drink = {

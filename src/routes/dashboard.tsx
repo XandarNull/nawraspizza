@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { MapPin, Phone, Clock, ChefHat, Bike, CheckCheck, X, ExternalLink } from "lucide-react";
+import { MapPin, Phone, Clock, ChefHat, Bike, CheckCheck, X, ExternalLink, Share2, Lock } from "lucide-react";
 import { formatPrice } from "@/lib/menu";
 
 export const Route = createFileRoute("/dashboard")({
@@ -14,8 +14,11 @@ export const Route = createFileRoute("/dashboard")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: Dashboard,
+  component: DashboardGate,
 });
+
+const DASHBOARD_PASSWORD = "NawrasPizza2026";
+const AUTH_KEY = "nawras_dashboard_auth";
 
 type OrderItem = {
   kind: "pizza" | "drink";
@@ -53,9 +56,99 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: "ملغى",
 };
 
-function Dashboard() {
+function DashboardGate() {
+  const [authed, setAuthed] = useState(false);
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem(AUTH_KEY) === "1") {
+      setAuthed(true);
+    }
+  }, []);
+
+  if (authed) return <Dashboard onLogout={() => { sessionStorage.removeItem(AUTH_KEY); setAuthed(false); }} />;
+
+  return (
+    <div className="min-h-screen bg-[color:var(--cream)] text-[color:var(--ink)] flex items-center justify-center px-4">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (pw === DASHBOARD_PASSWORD) {
+            sessionStorage.setItem(AUTH_KEY, "1");
+            setAuthed(true);
+          } else {
+            setErr(true);
+          }
+        }}
+        className="w-full max-w-sm bg-white rounded-2xl border border-[color:var(--line)] p-6 shadow-sm"
+      >
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[color:var(--tomato)] text-white mx-auto mb-4">
+          <Lock className="w-5 h-5" />
+        </div>
+        <h1 className="font-serif text-2xl text-center">لوحة المطبخ</h1>
+        <p className="text-sm text-[color:var(--ink-muted)] text-center mt-1">أدخل كلمة المرور للمتابعة</p>
+        <input
+          type="password"
+          value={pw}
+          onChange={(e) => { setPw(e.target.value); setErr(false); }}
+          placeholder="كلمة المرور"
+          autoFocus
+          className="mt-5 w-full px-4 py-3 rounded-full border border-[color:var(--line)] bg-[color:var(--cream)] focus:outline-none focus:border-[color:var(--tomato)]"
+        />
+        {err && <p className="mt-2 text-sm text-[color:var(--tomato)] text-center">كلمة المرور غير صحيحة</p>}
+        <button
+          type="submit"
+          className="mt-4 w-full px-4 py-3 rounded-full bg-[color:var(--tomato)] text-white font-bold hover:bg-[color:var(--tomato-dark)] transition-colors"
+        >
+          دخول
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ---- Alarm (3s loud beeping via Web Audio) ----
+function playAlarm() {
+  try {
+    const AC: typeof AudioContext =
+      (window as any).AudioContext || (window as any).webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+    const master = ctx.createGain();
+    master.gain.value = 1.0;
+    master.connect(ctx.destination);
+
+    // 6 quick beeps over ~3 seconds
+    const beeps = 6;
+    const beepDur = 0.35;
+    const gap = 0.15;
+    for (let i = 0; i < beeps; i++) {
+      const start = ctx.currentTime + i * (beepDur + gap);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(i % 2 === 0 ? 1000 : 750, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.9, start + 0.02);
+      gain.gain.setValueAtTime(0.9, start + beepDur - 0.05);
+      gain.gain.linearRampToValueAtTime(0, start + beepDur);
+      osc.connect(gain).connect(master);
+      osc.start(start);
+      osc.stop(start + beepDur);
+    }
+    setTimeout(() => ctx.close().catch(() => {}), 3500);
+  } catch {
+    // ignore
+  }
+}
+
+function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [filter, setFilter] = useState<string>("active");
+  const [confirmCancel, setConfirmCancel] = useState<Order | null>(null);
+  const [shareFor, setShareFor] = useState<Order | null>(null);
+  const initialLoadDone = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -68,6 +161,7 @@ function Dashboard() {
         if (!mounted) return;
         if (error) toast.error(error.message);
         else setOrders((data ?? []) as Order[]);
+        initialLoadDone.current = true;
       });
 
     const channel = supabase
@@ -76,8 +170,10 @@ function Dashboard() {
         setOrders((cur) => {
           const list = cur ?? [];
           if (payload.eventType === "INSERT") {
-            toast.success(`طلب جديد من ${(payload.new as Order).customer_name}`);
-            return [payload.new as Order, ...list];
+            const o = payload.new as Order;
+            toast.success(`طلب جديد من ${o.customer_name}`);
+            if (initialLoadDone.current) playAlarm();
+            return [o, ...list];
           }
           if (payload.eventType === "UPDATE") {
             return list.map((o) => (o.id === (payload.new as Order).id ? (payload.new as Order) : o));
@@ -123,6 +219,12 @@ function Dashboard() {
             <Stat label="جديد" value={counts.new} tone="tomato" />
             <Stat label="في الفرن" value={counts.preparing} />
             <Stat label="في الطريق" value={counts.out} />
+            <button
+              onClick={onLogout}
+              className="text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] px-2 py-1 rounded-full border border-[color:var(--line)]"
+            >
+              خروج
+            </button>
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-3 flex gap-1 overflow-x-auto">
@@ -157,11 +259,149 @@ function Dashboard() {
         )}
         <div className="grid gap-4 md:grid-cols-2">
           {filtered.map((o) => (
-            <OrderCard key={o.id} order={o} onStatus={setStatus} />
+            <OrderCard
+              key={o.id}
+              order={o}
+              onStatus={setStatus}
+              onAskCancel={() => setConfirmCancel(o)}
+              onShare={() => setShareFor(o)}
+            />
           ))}
         </div>
       </main>
+
+      {confirmCancel && (
+        <Modal onClose={() => setConfirmCancel(null)}>
+          <h3 className="font-serif text-xl">تأكيد إلغاء الطلب</h3>
+          <p className="text-sm text-[color:var(--ink-muted)] mt-2">
+            هل أنت متأكد من إلغاء طلب <span className="font-bold text-[color:var(--ink)]">{confirmCancel.customer_name}</span>؟ لا يمكن التراجع عن هذا الإجراء.
+          </p>
+          <div className="flex gap-2 mt-5 justify-end">
+            <button
+              onClick={() => setConfirmCancel(null)}
+              className="px-4 py-2 rounded-full text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]"
+            >
+              تراجع
+            </button>
+            <button
+              onClick={() => { setStatus(confirmCancel.id, "cancelled"); setConfirmCancel(null); }}
+              className="px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)]"
+            >
+              نعم، ألغِ الطلب
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {shareFor && (
+        <ShareModal order={shareFor} onClose={() => setShareFor(null)} />
+      )}
     </div>
+  );
+}
+
+function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  return (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl border border-[color:var(--line)] w-full max-w-md p-6"
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function buildShareText(order: Order): string {
+  const items = Array.isArray(order.items) ? order.items : [];
+  const lines = [
+    `🍕 طلب #${order.id.slice(0, 6)}`,
+    `👤 ${order.customer_name}`,
+    `📞 ${order.phone}`,
+    `📍 ${order.address}`,
+  ];
+  if (order.latitude != null && order.longitude != null) {
+    lines.push(`🗺️ https://www.google.com/maps?q=${order.latitude},${order.longitude}`);
+  }
+  lines.push("", "الطلب:");
+  for (const it of items) {
+    lines.push(`• ${it.qty}× ${it.label} — ${formatPrice(it.unit_price * it.qty)}`);
+  }
+  if (order.notes) lines.push("", `📝 ملاحظة: ${order.notes}`);
+  lines.push("", `💰 المجموع: ${formatPrice(Number(order.total))}`);
+  return lines.join("\n");
+}
+
+function ShareModal({ order, onClose }: { order: Order; onClose: () => void }) {
+  const text = buildShareText(order);
+  const encoded = encodeURIComponent(text);
+  const canNative = typeof navigator !== "undefined" && !!(navigator as any).share;
+
+  const options: { label: string; href?: string; onClick?: () => void; emoji: string }[] = [
+    { label: "واتساب", href: `https://wa.me/?text=${encoded}`, emoji: "🟢" },
+    { label: "تيليغرام", href: `https://t.me/share/url?url=${encodeURIComponent(" ")}&text=${encoded}`, emoji: "✈️" },
+    { label: "رسالة SMS", href: `sms:?body=${encoded}`, emoji: "💬" },
+    { label: "البريد الإلكتروني", href: `mailto:?subject=${encodeURIComponent("طلب جديد")}&body=${encoded}`, emoji: "✉️" },
+  ];
+  if (canNative) {
+    options.unshift({
+      label: "مشاركة عبر الجهاز",
+      emoji: "📱",
+      onClick: async () => {
+        try {
+          await (navigator as any).share({ title: "طلب جديد", text });
+          onClose();
+        } catch {
+          /* user cancelled */
+        }
+      },
+    });
+  }
+
+  return (
+    <Modal onClose={onClose}>
+      <h3 className="font-serif text-xl">مشاركة الطلب</h3>
+      <p className="text-sm text-[color:var(--ink-muted)] mt-1">اختر التطبيق لإرسال معلومات العميل</p>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        {options.map((opt) =>
+          opt.href ? (
+            <a
+              key={opt.label}
+              href={opt.href}
+              target="_blank"
+              rel="noreferrer"
+              onClick={onClose}
+              className="flex items-center gap-2 px-3 py-3 rounded-xl border border-[color:var(--line)] hover:border-[color:var(--tomato)] hover:bg-[color:var(--cream)] text-sm"
+            >
+              <span className="text-lg">{opt.emoji}</span>
+              <span className="font-bold">{opt.label}</span>
+            </a>
+          ) : (
+            <button
+              key={opt.label}
+              onClick={opt.onClick}
+              className="flex items-center gap-2 px-3 py-3 rounded-xl border border-[color:var(--line)] hover:border-[color:var(--tomato)] hover:bg-[color:var(--cream)] text-sm text-right"
+            >
+              <span className="text-lg">{opt.emoji}</span>
+              <span className="font-bold">{opt.label}</span>
+            </button>
+          )
+        )}
+      </div>
+      <button
+        onClick={() => { navigator.clipboard?.writeText(text); toast.success("تم نسخ معلومات الطلب"); }}
+        className="mt-3 w-full px-4 py-2 rounded-full border border-[color:var(--line)] text-sm hover:border-[color:var(--tomato)]"
+      >
+        نسخ النص
+      </button>
+      <div className="mt-4 text-xs text-[color:var(--ink-muted)] bg-[color:var(--cream)] rounded-lg p-3 whitespace-pre-wrap max-h-40 overflow-auto">
+        {text}
+      </div>
+    </Modal>
   );
 }
 
@@ -174,7 +414,17 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: "to
   );
 }
 
-function OrderCard({ order, onStatus }: { order: Order; onStatus: (id: string, s: string) => void }) {
+function OrderCard({
+  order,
+  onStatus,
+  onAskCancel,
+  onShare,
+}: {
+  order: Order;
+  onStatus: (id: string, s: string) => void;
+  onAskCancel: () => void;
+  onShare: () => void;
+}) {
   const step = STATUS_FLOW.find((s) => s.key === order.status);
   const created = new Date(order.created_at);
   const mins = Math.max(0, Math.round((Date.now() - created.getTime()) / 60000));
@@ -228,12 +478,19 @@ function OrderCard({ order, onStatus }: { order: Order; onStatus: (id: string, s
           </p>
         )}
 
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-4 flex items-center justify-between gap-2 flex-wrap">
           <div className="font-serif text-2xl">{formatPrice(Number(order.total))}</div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <button
+              onClick={onShare}
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-sm border border-[color:var(--line)] hover:border-[color:var(--tomato)] hover:text-[color:var(--tomato)]"
+              aria-label="مشاركة الطلب"
+            >
+              <Share2 className="w-4 h-4" /> مشاركة
+            </button>
             {order.status !== "cancelled" && order.status !== "done" && (
               <button
-                onClick={() => onStatus(order.id, "cancelled")}
+                onClick={onAskCancel}
                 className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)]"
                 aria-label="إلغاء الطلب"
               >
