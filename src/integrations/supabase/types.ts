@@ -27,6 +27,7 @@ export type Database = {
           phone: string
           status: string
           total: number
+          tracking_token: string | null
         }
         Insert: {
           address: string
@@ -40,6 +41,7 @@ export type Database = {
           phone: string
           status?: string
           total: number
+          tracking_token?: string | null
         }
         Update: {
           address?: string
@@ -53,6 +55,7 @@ export type Database = {
           phone?: string
           status?: string
           total?: number
+          tracking_token?: string | null
         }
         Relationships: []
       }
