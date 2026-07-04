@@ -32,7 +32,7 @@ export const Route = createFileRoute("/")({
   component: OrderPage,
 });
 
-type Step = "menu" | "checkout" | "done";
+type Step = "menu" | "checkout";
 
 const BRANCHES = [
   { name: "فرع الجامعة", phone: "07710217701" },
