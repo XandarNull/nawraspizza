@@ -1,10 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { MapPin, Phone, Clock, ChefHat, Bike, CheckCheck, X, ExternalLink, Share2, Lock } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Clock,
+  ChefHat,
+  Bike,
+  CheckCheck,
+  X,
+  Check,
+  ExternalLink,
+  Share2,
+  Lock,
+} from "lucide-react";
 import { formatPrice } from "@/lib/menu";
+import {
+  dashboardLogin,
+  dashboardLogout,
+  dashboardSession,
+  listOrders,
+  updateOrderStatus,
+  type OrderDTO,
+} from "@/lib/orders.functions";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -17,29 +37,7 @@ export const Route = createFileRoute("/dashboard")({
   component: DashboardGate,
 });
 
-const DASHBOARD_PASSWORD = "NawrasPizza2026";
-const AUTH_KEY = "nawras_dashboard_auth";
-
-type OrderItem = {
-  kind: "pizza" | "drink";
-  qty: number;
-  label: string;
-  unit_price: number;
-};
-
-type Order = {
-  id: string;
-  customer_name: string;
-  phone: string;
-  address: string;
-  latitude: number | null;
-  longitude: number | null;
-  items: OrderItem[];
-  total: number;
-  status: string;
-  notes: string | null;
-  created_at: string;
-};
+type Order = OrderDTO;
 
 const STATUS_FLOW: { key: string; label: string; icon: typeof ChefHat; next?: string }[] = [
   { key: "new", label: "جديد", icon: Clock, next: "preparing" },
@@ -57,28 +55,63 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 function DashboardGate() {
+  const [checking, setChecking] = useState(true);
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState("");
   const [err, setErr] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const session = useServerFn(dashboardSession);
+  const login = useServerFn(dashboardLogin);
+  const logout = useServerFn(dashboardLogout);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem(AUTH_KEY) === "1") {
-      setAuthed(true);
-    }
-  }, []);
+    let mounted = true;
+    session()
+      .then((r) => {
+        if (!mounted) return;
+        setAuthed(Boolean(r?.authed));
+      })
+      .catch(() => {})
+      .finally(() => mounted && setChecking(false));
+    return () => {
+      mounted = false;
+    };
+  }, [session]);
 
-  if (authed) return <Dashboard onLogout={() => { sessionStorage.removeItem(AUTH_KEY); setAuthed(false); }} />;
+  const onLogout = async () => {
+    try {
+      await logout();
+    } catch {
+      /* noop */
+    }
+    setAuthed(false);
+  };
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-[color:var(--cream)] grid place-items-center text-[color:var(--ink-muted)]">
+        جارِ التحقق…
+      </div>
+    );
+  }
+
+  if (authed) return <Dashboard onLogout={onLogout} />;
 
   return (
     <div className="min-h-screen bg-[color:var(--cream)] text-[color:var(--ink)] flex items-center justify-center px-4">
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          if (pw === DASHBOARD_PASSWORD) {
-            sessionStorage.setItem(AUTH_KEY, "1");
-            setAuthed(true);
-          } else {
+          setSubmitting(true);
+          setErr(false);
+          try {
+            const r = await login({ data: { password: pw } });
+            if (r?.ok) setAuthed(true);
+            else setErr(true);
+          } catch {
             setErr(true);
+          } finally {
+            setSubmitting(false);
           }
         }}
         className="w-full max-w-sm bg-white rounded-2xl border border-[color:var(--line)] p-6 shadow-sm"
@@ -87,118 +120,173 @@ function DashboardGate() {
           <Lock className="w-5 h-5" />
         </div>
         <h1 className="font-serif text-2xl text-center">لوحة المطبخ</h1>
-        <p className="text-sm text-[color:var(--ink-muted)] text-center mt-1">أدخل كلمة المرور للمتابعة</p>
+        <p className="text-sm text-[color:var(--ink-muted)] text-center mt-1">
+          أدخل كلمة المرور للمتابعة
+        </p>
         <input
           type="password"
           value={pw}
-          onChange={(e) => { setPw(e.target.value); setErr(false); }}
+          onChange={(e) => {
+            setPw(e.target.value);
+            setErr(false);
+          }}
           placeholder="كلمة المرور"
           autoFocus
           className="mt-5 w-full px-4 py-3 rounded-full border border-[color:var(--line)] bg-[color:var(--cream)] focus:outline-none focus:border-[color:var(--tomato)]"
         />
-        {err && <p className="mt-2 text-sm text-[color:var(--tomato)] text-center">كلمة المرور غير صحيحة</p>}
+        {err && (
+          <p className="mt-2 text-sm text-[color:var(--tomato)] text-center">
+            كلمة المرور غير صحيحة
+          </p>
+        )}
         <button
           type="submit"
-          className="mt-4 w-full px-4 py-3 rounded-full bg-[color:var(--tomato)] text-white font-bold hover:bg-[color:var(--tomato-dark)] transition-colors"
+          disabled={submitting}
+          className="mt-4 w-full px-4 py-3 rounded-full bg-[color:var(--tomato)] text-white font-bold hover:bg-[color:var(--tomato-dark)] transition-colors disabled:opacity-60"
         >
-          دخول
+          {submitting ? "جارِ الدخول…" : "دخول"}
         </button>
+        <p className="mt-3 text-[11px] text-center text-[color:var(--ink-muted)]">
+          يبقى تسجيل الدخول ساري لمدة ٩٠ يوماً على هذا الجهاز.
+        </p>
       </form>
     </div>
   );
 }
 
-// ---- Alarm (3s loud beeping via Web Audio) ----
-function playAlarm() {
-  try {
-    const AC: typeof AudioContext =
-      (window as any).AudioContext || (window as any).webkitAudioContext;
-    if (!AC) return;
-    const ctx = new AC();
-    const master = ctx.createGain();
-    master.gain.value = 1.0;
-    master.connect(ctx.destination);
+// ---- Looping alarm: keeps ringing until every "new" order is handled ----
+function useAlarmLoop(active: boolean) {
+  const ctxRef = useRef<AudioContext | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stoppedRef = useRef(false);
 
-    // 6 quick beeps over ~3 seconds
-    const beeps = 6;
-    const beepDur = 0.35;
-    const gap = 0.15;
-    for (let i = 0; i < beeps; i++) {
-      const start = ctx.currentTime + i * (beepDur + gap);
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "square";
-      osc.frequency.setValueAtTime(i % 2 === 0 ? 1000 : 750, start);
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(0.9, start + 0.02);
-      gain.gain.setValueAtTime(0.9, start + beepDur - 0.05);
-      gain.gain.linearRampToValueAtTime(0, start + beepDur);
-      osc.connect(gain).connect(master);
-      osc.start(start);
-      osc.stop(start + beepDur);
+  const stop = useCallback(() => {
+    stoppedRef.current = true;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
-    setTimeout(() => ctx.close().catch(() => {}), 3500);
-  } catch {
-    // ignore
-  }
+    if (ctxRef.current) {
+      ctxRef.current.close().catch(() => {});
+      ctxRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!active) {
+      stop();
+      return;
+    }
+    stoppedRef.current = false;
+
+    const playBurst = () => {
+      if (stoppedRef.current) return;
+      try {
+        const AC: typeof AudioContext =
+          (window as unknown as { AudioContext: typeof AudioContext; webkitAudioContext: typeof AudioContext })
+            .AudioContext ||
+          (window as unknown as { AudioContext: typeof AudioContext; webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext;
+        if (!AC) return;
+        if (!ctxRef.current) ctxRef.current = new AC();
+        const ctx = ctxRef.current!;
+        const master = ctx.createGain();
+        master.gain.value = 1.0;
+        master.connect(ctx.destination);
+
+        const beeps = 6;
+        const beepDur = 0.35;
+        const gap = 0.15;
+        for (let i = 0; i < beeps; i++) {
+          const start = ctx.currentTime + i * (beepDur + gap);
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "square";
+          osc.frequency.setValueAtTime(i % 2 === 0 ? 1000 : 750, start);
+          gain.gain.setValueAtTime(0, start);
+          gain.gain.linearRampToValueAtTime(0.9, start + 0.02);
+          gain.gain.setValueAtTime(0.9, start + beepDur - 0.05);
+          gain.gain.linearRampToValueAtTime(0, start + beepDur);
+          osc.connect(gain).connect(master);
+          osc.start(start);
+          osc.stop(start + beepDur);
+        }
+      } catch {
+        /* browser blocked audio */
+      }
+      // Loop every ~3.5s while active
+      timerRef.current = setTimeout(playBurst, 3600);
+    };
+
+    playBurst();
+    return () => stop();
+  }, [active, stop]);
 }
 
-function Dashboard({ onLogout }: { onLogout: () => void }) {
+function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [filter, setFilter] = useState<string>("active");
   const [confirmCancel, setConfirmCancel] = useState<Order | null>(null);
   const [shareFor, setShareFor] = useState<Order | null>(null);
+  const knownIdsRef = useRef<Set<string>>(new Set());
   const initialLoadDone = useRef(false);
 
-  useEffect(() => {
-    let mounted = true;
-    supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(200)
-      .then(({ data, error }) => {
-        if (!mounted) return;
-        if (error) toast.error(error.message);
-        else setOrders((data ?? []) as Order[]);
-        initialLoadDone.current = true;
-      });
+  const load = useServerFn(listOrders);
+  const setStatusFn = useServerFn(updateOrderStatus);
 
-    const channel = supabase
-      .channel("orders-dashboard")
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (payload) => {
-        setOrders((cur) => {
-          const list = cur ?? [];
-          if (payload.eventType === "INSERT") {
-            const o = payload.new as Order;
+  const refresh = useCallback(async () => {
+    try {
+      const data = await load();
+      const list = (data ?? []) as Order[];
+      if (initialLoadDone.current) {
+        for (const o of list) {
+          if (!knownIdsRef.current.has(o.id)) {
             toast.success(`طلب جديد من ${o.customer_name}`);
-            if (initialLoadDone.current) playAlarm();
-            return [o, ...list];
           }
-          if (payload.eventType === "UPDATE") {
-            return list.map((o) => (o.id === (payload.new as Order).id ? (payload.new as Order) : o));
-          }
-          if (payload.eventType === "DELETE") {
-            return list.filter((o) => o.id !== (payload.old as Order).id);
-          }
-          return list;
-        });
-      })
-      .subscribe();
+        }
+      }
+      knownIdsRef.current = new Set(list.map((o) => o.id));
+      setOrders(list);
+      initialLoadDone.current = true;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.toLowerCase().includes("unauthorized")) {
+        await onLogout();
+        return;
+      }
+      // silent
+    }
+  }, [load, onLogout]);
 
+  useEffect(() => {
+    refresh();
+    const id = setInterval(refresh, 3000);
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
     return () => {
-      mounted = false;
-      supabase.removeChannel(channel);
+      clearInterval(id);
+      window.removeEventListener("focus", onFocus);
     };
-  }, []);
+  }, [refresh]);
 
   const setStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("orders").update({ status }).eq("id", id);
-    if (error) toast.error(error.message);
+    // Optimistic update
+    setOrders((cur) => (cur ? cur.map((o) => (o.id === id ? { ...o, status } : o)) : cur));
+    try {
+      await setStatusFn({ data: { id, status } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "تعذّر تحديث الحالة");
+      refresh();
+    }
   };
 
+  const hasNew = (orders ?? []).some((o) => o.status === "new");
+  useAlarmLoop(hasNew);
+
   const filtered =
-    orders?.filter((o) => (filter === "active" ? o.status !== "done" && o.status !== "cancelled" : o.status === filter)) ?? [];
+    orders?.filter((o) =>
+      filter === "active" ? o.status !== "done" && o.status !== "cancelled" : o.status === filter,
+    ) ?? [];
 
   const counts = {
     new: orders?.filter((o) => o.status === "new").length ?? 0,
@@ -212,7 +300,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       <header className="border-b border-[color:var(--line)] bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div>
-            <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)]">المطبخ</div>
+            <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)]">
+              المطبخ
+            </div>
             <h1 className="font-serif text-2xl">الطلبات الحيّة</h1>
           </div>
           <div className="flex items-center gap-4 text-sm">
@@ -252,10 +342,18 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </div>
       </header>
 
+      {hasNew && (
+        <div className="bg-[color:var(--tomato)] text-white text-center text-sm py-2 animate-pulse">
+          🔔 هناك طلب جديد بانتظار القبول أو الرفض — سيستمر التنبيه حتى الرد.
+        </div>
+      )}
+
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         {orders === null && <p className="text-[color:var(--ink-muted)]">جارِ التحميل…</p>}
         {orders !== null && filtered.length === 0 && (
-          <div className="text-center py-16 text-[color:var(--ink-muted)]">لا توجد طلبات هنا.</div>
+          <div className="text-center py-16 text-[color:var(--ink-muted)]">
+            لا توجد طلبات هنا.
+          </div>
         )}
         <div className="grid gap-4 md:grid-cols-2">
           {filtered.map((o) => (
@@ -272,9 +370,13 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
       {confirmCancel && (
         <Modal onClose={() => setConfirmCancel(null)}>
-          <h3 className="font-serif text-xl">تأكيد إلغاء الطلب</h3>
+          <h3 className="font-serif text-xl">تأكيد رفض/إلغاء الطلب</h3>
           <p className="text-sm text-[color:var(--ink-muted)] mt-2">
-            هل أنت متأكد من إلغاء طلب <span className="font-bold text-[color:var(--ink)]">{confirmCancel.customer_name}</span>؟ لا يمكن التراجع عن هذا الإجراء.
+            هل أنت متأكد من إلغاء طلب{" "}
+            <span className="font-bold text-[color:var(--ink)]">
+              {confirmCancel.customer_name}
+            </span>
+            ؟ لا يمكن التراجع عن هذا الإجراء.
           </p>
           <div className="flex gap-2 mt-5 justify-end">
             <button
@@ -284,7 +386,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               تراجع
             </button>
             <button
-              onClick={() => { setStatus(confirmCancel.id, "cancelled"); setConfirmCancel(null); }}
+              onClick={() => {
+                setStatus(confirmCancel.id, "cancelled");
+                setConfirmCancel(null);
+              }}
               className="px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)]"
             >
               نعم، ألغِ الطلب
@@ -293,9 +398,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </Modal>
       )}
 
-      {shareFor && (
-        <ShareModal order={shareFor} onClose={() => setShareFor(null)} />
-      )}
+      {shareFor && <ShareModal order={shareFor} onClose={() => setShareFor(null)} />}
     </div>
   );
 }
@@ -339,13 +442,24 @@ function buildShareText(order: Order): string {
 function ShareModal({ order, onClose }: { order: Order; onClose: () => void }) {
   const text = buildShareText(order);
   const encoded = encodeURIComponent(text);
-  const canNative = typeof navigator !== "undefined" && !!(navigator as any).share;
+  const canNative =
+    typeof navigator !== "undefined" &&
+    !!(navigator as unknown as { share?: (d: { title?: string; text?: string }) => Promise<void> })
+      .share;
 
   const options: { label: string; href?: string; onClick?: () => void; emoji: string }[] = [
     { label: "واتساب", href: `https://wa.me/?text=${encoded}`, emoji: "🟢" },
-    { label: "تيليغرام", href: `https://t.me/share/url?url=${encodeURIComponent(" ")}&text=${encoded}`, emoji: "✈️" },
+    {
+      label: "تيليغرام",
+      href: `https://t.me/share/url?url=${encodeURIComponent(" ")}&text=${encoded}`,
+      emoji: "✈️",
+    },
     { label: "رسالة SMS", href: `sms:?body=${encoded}`, emoji: "💬" },
-    { label: "البريد الإلكتروني", href: `mailto:?subject=${encodeURIComponent("طلب جديد")}&body=${encoded}`, emoji: "✉️" },
+    {
+      label: "البريد الإلكتروني",
+      href: `mailto:?subject=${encodeURIComponent("طلب جديد")}&body=${encoded}`,
+      emoji: "✉️",
+    },
   ];
   if (canNative) {
     options.unshift({
@@ -353,7 +467,11 @@ function ShareModal({ order, onClose }: { order: Order; onClose: () => void }) {
       emoji: "📱",
       onClick: async () => {
         try {
-          await (navigator as any).share({ title: "طلب جديد", text });
+          await (
+            navigator as unknown as {
+              share: (d: { title?: string; text?: string }) => Promise<void>;
+            }
+          ).share({ title: "طلب جديد", text });
           onClose();
         } catch {
           /* user cancelled */
@@ -365,7 +483,9 @@ function ShareModal({ order, onClose }: { order: Order; onClose: () => void }) {
   return (
     <Modal onClose={onClose}>
       <h3 className="font-serif text-xl">مشاركة الطلب</h3>
-      <p className="text-sm text-[color:var(--ink-muted)] mt-1">اختر التطبيق لإرسال معلومات العميل</p>
+      <p className="text-sm text-[color:var(--ink-muted)] mt-1">
+        اختر التطبيق لإرسال معلومات العميل
+      </p>
       <div className="mt-4 grid grid-cols-2 gap-2">
         {options.map((opt) =>
           opt.href ? (
@@ -389,11 +509,14 @@ function ShareModal({ order, onClose }: { order: Order; onClose: () => void }) {
               <span className="text-lg">{opt.emoji}</span>
               <span className="font-bold">{opt.label}</span>
             </button>
-          )
+          ),
         )}
       </div>
       <button
-        onClick={() => { navigator.clipboard?.writeText(text); toast.success("تم نسخ معلومات الطلب"); }}
+        onClick={() => {
+          navigator.clipboard?.writeText(text);
+          toast.success("تم نسخ معلومات الطلب");
+        }}
         className="mt-3 w-full px-4 py-2 rounded-full border border-[color:var(--line)] text-sm hover:border-[color:var(--tomato)]"
       >
         نسخ النص
@@ -408,7 +531,13 @@ function ShareModal({ order, onClose }: { order: Order; onClose: () => void }) {
 function Stat({ label, value, tone }: { label: string; value: number; tone?: "tomato" }) {
   return (
     <div className="text-center">
-      <div className={"font-serif text-2xl " + (tone === "tomato" ? "text-[color:var(--tomato)]" : "")}>{value}</div>
+      <div
+        className={
+          "font-serif text-2xl " + (tone === "tomato" ? "text-[color:var(--tomato)]" : "")
+        }
+      >
+        {value}
+      </div>
       <div className="text-[10px] tracking-widest text-[color:var(--ink-muted)]">{label}</div>
     </div>
   );
@@ -433,30 +562,51 @@ function OrderCard({
     order.latitude != null && order.longitude != null
       ? `https://www.google.com/maps?q=${order.latitude},${order.longitude}`
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`;
+  const isNew = order.status === "new";
 
   return (
-    <article className="bg-white rounded-2xl border border-[color:var(--line)] overflow-hidden">
+    <article
+      className={
+        "bg-white rounded-2xl border overflow-hidden " +
+        (isNew
+          ? "border-[color:var(--tomato)] ring-2 ring-[color:var(--tomato)]/30 animate-pulse-once"
+          : "border-[color:var(--line)]")
+      }
+    >
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-xs tracking-widest text-[color:var(--ink-muted)]">#{order.id.slice(0, 6)} · قبل {mins} دقيقة</div>
+            <div className="text-xs tracking-widest text-[color:var(--ink-muted)]">
+              #{order.id.slice(0, 6)} · قبل {mins} دقيقة
+            </div>
             <h3 className="font-serif text-xl mt-0.5">{order.customer_name}</h3>
           </div>
           <StatusPill status={order.status} />
         </div>
 
         <div className="mt-3 space-y-1.5 text-sm">
-          <a href={`tel:${order.phone}`} className="flex items-center gap-2 hover:text-[color:var(--tomato)]" dir="ltr">
+          <a
+            href={`tel:${order.phone}`}
+            className="flex items-center gap-2 hover:text-[color:var(--tomato)]"
+            dir="ltr"
+          >
             <Phone className="w-4 h-4 text-[color:var(--ink-muted)]" /> {order.phone}
           </a>
           <div className="flex items-start gap-2">
             <MapPin className="w-4 h-4 text-[color:var(--ink-muted)] mt-0.5 shrink-0" />
             <div className="flex-1">
               <div>{order.address}</div>
-              <a href={mapUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-[color:var(--tomato)] hover:underline mt-0.5">
+              <a
+                href={mapUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-[color:var(--tomato)] hover:underline mt-0.5"
+              >
                 فتح في الخرائط <ExternalLink className="w-3 h-3" />
                 {order.latitude != null && order.longitude != null && (
-                  <span className="text-[color:var(--ink-muted)] mx-1" dir="ltr">({order.latitude.toFixed(4)}, {order.longitude.toFixed(4)})</span>
+                  <span className="text-[color:var(--ink-muted)] mx-1" dir="ltr">
+                    ({order.latitude.toFixed(4)}, {order.longitude.toFixed(4)})
+                  </span>
                 )}
               </a>
             </div>
@@ -466,8 +616,12 @@ function OrderCard({
         <ul className="mt-4 divide-y divide-[color:var(--line)] border-y border-[color:var(--line)]">
           {items.map((it, i) => (
             <li key={i} className="py-2 flex items-center justify-between text-sm">
-              <span><span className="font-bold">{it.qty}×</span> {it.label}</span>
-              <span className="text-[color:var(--ink-muted)]">{formatPrice(it.unit_price * it.qty)}</span>
+              <span>
+                <span className="font-bold">{it.qty}×</span> {it.label}
+              </span>
+              <span className="text-[color:var(--ink-muted)]">
+                {formatPrice(it.unit_price * it.qty)}
+              </span>
             </li>
           ))}
         </ul>
@@ -480,7 +634,7 @@ function OrderCard({
 
         <div className="mt-4 flex items-center justify-between gap-2 flex-wrap">
           <div className="font-serif text-2xl">{formatPrice(Number(order.total))}</div>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center flex-wrap justify-end">
             <button
               onClick={onShare}
               className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-sm border border-[color:var(--line)] hover:border-[color:var(--tomato)] hover:text-[color:var(--tomato)]"
@@ -488,22 +642,42 @@ function OrderCard({
             >
               <Share2 className="w-4 h-4" /> مشاركة
             </button>
-            {order.status !== "cancelled" && order.status !== "done" && (
-              <button
-                onClick={onAskCancel}
-                className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)]"
-                aria-label="إلغاء الطلب"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-            {step?.next && (
-              <button
-                onClick={() => onStatus(order.id, step.next!)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)] transition-colors"
-              >
-                نقل إلى: {STATUS_LABEL[step.next] ?? step.next}
-              </button>
+
+            {isNew ? (
+              <>
+                <button
+                  onClick={onAskCancel}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-[color:var(--tomato)] text-[color:var(--tomato)] text-sm font-bold hover:bg-[color:var(--tomato)] hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" /> رفض
+                </button>
+                <button
+                  onClick={() => onStatus(order.id, "preparing")}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
+                >
+                  <Check className="w-4 h-4" /> قبول الطلب
+                </button>
+              </>
+            ) : (
+              <>
+                {order.status !== "cancelled" && order.status !== "done" && (
+                  <button
+                    onClick={onAskCancel}
+                    className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)]"
+                    aria-label="إلغاء الطلب"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+                {step?.next && (
+                  <button
+                    onClick={() => onStatus(order.id, step.next!)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)] transition-colors"
+                  >
+                    نقل إلى: {STATUS_LABEL[step.next] ?? step.next}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -521,5 +695,9 @@ function StatusPill({ status }: { status: string }) {
     cancelled: { bg: "bg-neutral-400 text-white", label: "ملغى" },
   };
   const s = map[status] ?? { bg: "bg-neutral-300 text-neutral-700", label: status };
-  return <span className={"text-[11px] tracking-widest px-2.5 py-1 rounded-full " + s.bg}>{s.label}</span>;
+  return (
+    <span className={"text-[11px] tracking-widest px-2.5 py-1 rounded-full " + s.bg}>
+      {s.label}
+    </span>
+  );
 }
