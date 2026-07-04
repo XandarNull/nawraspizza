@@ -112,14 +112,8 @@ function OrderPage() {
           cart={cart}
           total={total}
           onBack={() => setStep("menu")}
-          onDone={() => {
-            setCart([]);
-            setStep("done");
-          }}
         />
       )}
-
-      {step === "done" && <DoneStep onNew={() => setStep("menu")} />}
 
       <footer className="border-t border-[color:var(--line)] mt-16 py-8 text-center text-sm text-[color:var(--ink-muted)]">
         <div className="mb-2">مطعم بيتزا نورس · مفتوح من ١١:٠٠ حتى ٢٣:٠٠</div>
@@ -320,9 +314,10 @@ function CheckoutStep(props: {
   cart: CartItem[];
   total: number;
   onBack: () => void;
-  onDone: () => void;
 }) {
-  const { cart, total, onBack, onDone } = props;
+  const { cart, total, onBack } = props;
+  const navigate = useNavigate();
+  const submitOrder = useServerFn(createOrder);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -358,24 +353,25 @@ function CheckoutStep(props: {
       return;
     }
     setSubmitting(true);
-    const payload = {
-      customer_name: name.trim().slice(0, 100),
-      phone: phone.trim().slice(0, 30),
-      address: address.trim().slice(0, 300),
-      latitude: coords?.lat ?? null,
-      longitude: coords?.lng ?? null,
-      notes: notes.trim().slice(0, 500) || null,
-      items: cart.map((i) => ({ ...i, label: itemLabel(i), unit_price: itemUnitPrice(i) })),
-      total,
-      status: "new",
-    };
-    const { error } = await supabase.from("orders").insert(payload);
-    setSubmitting(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const res = await submitOrder({
+        data: {
+          customer_name: name.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          latitude: coords?.lat ?? null,
+          longitude: coords?.lng ?? null,
+          notes: notes.trim() || null,
+          items: cart.map((i) => ({ ...i, label: itemLabel(i), unit_price: itemUnitPrice(i) })),
+          total,
+        },
+      });
+      navigate({ to: "/track/$token", params: { token: res.tracking_token } });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "تعذّر إرسال الطلب");
+    } finally {
+      setSubmitting(false);
     }
-    onDone();
   };
 
   return (
@@ -450,15 +446,3 @@ function Field({ label, required, children }: { label: string; required?: boolea
   );
 }
 
-function DoneStep({ onNew }: { onNew: () => void }) {
-  return (
-    <main className="max-w-xl mx-auto px-4 sm:px-6 pt-16 pb-16 text-center">
-      <div className="text-6xl mb-4">🍕</div>
-      <h1 className="font-serif text-4xl">تم استلام طلبك!</h1>
-      <p className="mt-3 text-[color:var(--ink-muted)]">وصل الطلب إلى المطبخ. سنتصل بك إذا احتجنا لأي شيء.</p>
-      <button onClick={onNew} className="mt-8 inline-flex px-5 py-3 rounded-full bg-[color:var(--tomato)] text-white font-bold hover:bg-[color:var(--tomato-dark)] transition-colors">
-        اطلب مرة أخرى
-      </button>
-    </main>
-  );
-}
