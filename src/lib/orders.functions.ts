@@ -15,7 +15,9 @@ function sessionConfig() {
     cookie: {
       httpOnly: true,
       secure: true,
-      sameSite: "lax" as const,
+      // 'none' so the cookie is set inside the Lovable preview iframe (cross-site context).
+      // Requires secure: true (already set). Works the same on the published site.
+      sameSite: "none" as const,
       path: "/",
       maxAge: SESSION_MAX_AGE,
     },
