@@ -262,26 +262,19 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
     let cancelled = false;
     const tick = () => {
       if (cancelled) return;
-      // Skip network work when the tab is in the background — the alarm/UI
-      // has nothing to react to, and it keeps request volume down.
-      if (typeof document !== "undefined" && document.hidden) return;
       refresh();
     };
     tick();
     const id = setInterval(tick, 5000);
     const onFocus = () => tick();
-    const onVisible = () => {
-      if (!document.hidden) tick();
-    };
     window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
       clearInterval(id);
       window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [refresh]);
+
 
   const setStatus = async (id: string, status: string) => {
     // Optimistic update
