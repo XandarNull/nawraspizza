@@ -19,6 +19,8 @@ import {
 } from "@/lib/menu";
 import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone, Lock } from "lucide-react";
 import nawrasLogo from "@/assets/nawras-logo.jpg.asset.json";
+import { assetUrl } from "@/lib/asset-url";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -141,7 +143,7 @@ function Header() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img
-            src={nawrasLogo.url}
+            src={assetUrl(nawrasLogo)}
             alt="شعار مطعم بيتزا نورس"
             width={48}
             height={48}
