@@ -10,19 +10,21 @@ import pizzaSauceAsset from "@/assets/pizza-sauce.jpg.asset.json";
 import pizzaMushroomAsset from "@/assets/pizza-mushroom.jpg.asset.json";
 import pizzaVeggieAsset from "@/assets/pizza-veggie.jpg.asset.json";
 import pizzaMargheritaAsset from "@/assets/pizza-margherita.jpg.asset.json";
+import { assetUrl } from "@/lib/asset-url";
 
-const pizzaMixed = pizzaMixedAsset.url;
-const pizzaShawarmaMeat = pizzaShawarmaMeatAsset.url;
-const pizzaShawarmaChicken = pizzaShawarmaChickenAsset.url;
-const pizzaKebab = pizzaKebabAsset.url;
-const pizzaSmokedBeef = pizzaSmokedBeefAsset.url;
-const pizzaTurkey = pizzaTurkeyAsset.url;
-const pizzaSauce = pizzaSauceAsset.url;
-const pizzaMushroom = pizzaMushroomAsset.url;
-const pizzaVeggie = pizzaVeggieAsset.url;
-const pizzaMargherita = pizzaMargheritaAsset.url;
-const pizzaPepperoni = pizzaPepperoniAsset.url;
-const pizzaSalami = pizzaSalamiAsset.url;
+const pizzaMixed = assetUrl(pizzaMixedAsset);
+const pizzaShawarmaMeat = assetUrl(pizzaShawarmaMeatAsset);
+const pizzaShawarmaChicken = assetUrl(pizzaShawarmaChickenAsset);
+const pizzaKebab = assetUrl(pizzaKebabAsset);
+const pizzaSmokedBeef = assetUrl(pizzaSmokedBeefAsset);
+const pizzaTurkey = assetUrl(pizzaTurkeyAsset);
+const pizzaSauce = assetUrl(pizzaSauceAsset);
+const pizzaMushroom = assetUrl(pizzaMushroomAsset);
+const pizzaVeggie = assetUrl(pizzaVeggieAsset);
+const pizzaMargherita = assetUrl(pizzaMargheritaAsset);
+const pizzaPepperoni = assetUrl(pizzaPepperoniAsset);
+const pizzaSalami = assetUrl(pizzaSalamiAsset);
+
 
 export type PizzaSize = "S" | "M" | "L";
 
