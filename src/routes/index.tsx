@@ -377,6 +377,7 @@ function CheckoutStep(props: {
           total,
         },
       });
+      saveMyOrder({ id: res.id, token: res.tracking_token });
       navigate({ to: "/track/$token", params: { token: res.tracking_token } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "تعذّر إرسال الطلب");
