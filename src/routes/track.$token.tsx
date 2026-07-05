@@ -115,8 +115,17 @@ function TrackPage() {
             </div>
             <h1 className="font-serif text-2xl">مرحباً {order.customer_name}</h1>
           </div>
-          <div className="text-xs tracking-widest text-[color:var(--ink-muted)]">
-            #{order.id.slice(0, 6)}
+          <div className="flex items-center gap-2">
+            <Link
+              to="/my-orders"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[color:var(--cream)] border border-[color:var(--line)] text-xs font-bold text-[color:var(--ink)] hover:bg-[color:var(--tomato)] hover:text-white hover:border-transparent transition-colors"
+            >
+              <ClipboardList className="w-3.5 h-3.5" />
+              <span>طلباتي</span>
+            </Link>
+            <div className="text-xs tracking-widest text-[color:var(--ink-muted)]">
+              #{order.id.slice(0, 6)}
+            </div>
           </div>
         </div>
       </header>
