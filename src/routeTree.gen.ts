@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as MyOrdersRouteImport } from './routes/my-orders'
+import { Route as InstallRouteImport } from './routes/install'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TrackTokenRouteImport } from './routes/track.$token'
@@ -17,6 +18,11 @@ import { Route as TrackTokenRouteImport } from './routes/track.$token'
 const MyOrdersRoute = MyOrdersRouteImport.update({
   id: '/my-orders',
   path: '/my-orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstallRoute = InstallRouteImport.update({
+  id: '/install',
+  path: '/install',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -38,12 +44,14 @@ const TrackTokenRoute = TrackTokenRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/install': typeof InstallRoute
   '/my-orders': typeof MyOrdersRoute
   '/track/$token': typeof TrackTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/install': typeof InstallRoute
   '/my-orders': typeof MyOrdersRoute
   '/track/$token': typeof TrackTokenRoute
 }
@@ -51,20 +59,28 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/install': typeof InstallRoute
   '/my-orders': typeof MyOrdersRoute
   '/track/$token': typeof TrackTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/my-orders' | '/track/$token'
+  fullPaths: '/' | '/dashboard' | '/install' | '/my-orders' | '/track/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/my-orders' | '/track/$token'
-  id: '__root__' | '/' | '/dashboard' | '/my-orders' | '/track/$token'
+  to: '/' | '/dashboard' | '/install' | '/my-orders' | '/track/$token'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/install'
+    | '/my-orders'
+    | '/track/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  InstallRoute: typeof InstallRoute
   MyOrdersRoute: typeof MyOrdersRoute
   TrackTokenRoute: typeof TrackTokenRoute
 }
@@ -76,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/my-orders'
       fullPath: '/my-orders'
       preLoaderRoute: typeof MyOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/install': {
+      id: '/install'
+      path: '/install'
+      fullPath: '/install'
+      preLoaderRoute: typeof InstallRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -105,9 +128,20 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  InstallRoute: InstallRoute,
   MyOrdersRoute: MyOrdersRoute,
   TrackTokenRoute: TrackTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
