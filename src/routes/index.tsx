@@ -195,10 +195,12 @@ function MenuStep(props: {
                     src={p.image}
                     alt={p.name}
                     loading="lazy"
+                    decoding="async"
                     width={768}
                     height={576}
                     className="w-full h-full object-cover"
                   />
+
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <div>
