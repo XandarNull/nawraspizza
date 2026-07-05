@@ -96,9 +96,11 @@ export const listOrders = createServerFn({ method: "GET" }).handler(async () => 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("orders")
-    .select("*")
+    .select(
+      "id, customer_name, phone, address, latitude, longitude, items, total, status, notes, created_at, tracking_token",
+    )
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(120);
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as OrderDTO[];
 });
