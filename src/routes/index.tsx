@@ -19,6 +19,8 @@ import {
 } from "@/lib/menu";
 import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone, Lock } from "lucide-react";
 import nawrasLogo from "@/assets/nawras-logo.jpg.asset.json";
+import { assetUrl } from "@/lib/asset-url";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
