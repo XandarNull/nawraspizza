@@ -430,6 +430,25 @@ function CheckoutStep(props: {
               <LocateFixed className="w-4 h-4" /> {locating ? "جارِ التحديد…" : coords ? "تحديث" : "شارك الموقع"}
             </button>
           </div>
+          {coords && (
+            <div className="mt-4 overflow-hidden rounded-xl border border-[color:var(--line)]">
+              <iframe
+                key={`${coords.lat},${coords.lng}`}
+                title="موقع التوصيل"
+                className="w-full h-56 block"
+                loading="lazy"
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=${coords.lng - 0.003}%2C${coords.lat - 0.002}%2C${coords.lng + 0.003}%2C${coords.lat + 0.002}&layer=mapnik&marker=${coords.lat}%2C${coords.lng}`}
+              />
+              <a
+                href={`https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lng}#map=17/${coords.lat}/${coords.lng}`}
+                target="_blank"
+                rel="noreferrer"
+                className="block text-center text-xs py-2 bg-[color:var(--cream)] text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)]"
+              >
+                عرض على الخريطة الكاملة ↗
+              </a>
+            </div>
+          )}
         </div>
 
         <Field label="ملاحظات (اختياري)">
