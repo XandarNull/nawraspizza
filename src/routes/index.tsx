@@ -345,6 +345,10 @@ function CheckoutStep(props: {
   const [locating, setLocating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
   const locate = () => {
     if (!("geolocation" in navigator)) {
       toast.error("خدمة الموقع غير متاحة على هذا الجهاز");
