@@ -42,11 +42,13 @@ function TrackPage() {
       } else {
         setOrder(r);
         setNotFound(false);
+        saveMyOrder({ id: r.id, token: r.tracking_token });
       }
     } catch {
       setNotFound(true);
     }
   }, [fetchOrder, token]);
+
 
   const status = order?.status;
   const isTerminal = status === "done" || status === "cancelled";
