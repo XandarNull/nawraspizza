@@ -156,10 +156,18 @@ function Header() {
             <div className="text-[11px] uppercase tracking-widest text-[color:var(--tomato)] mt-1">Nawras Pizza</div>
           </div>
         </div>
+        <Link
+          to="/my-orders"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-[color:var(--line)] text-sm font-bold text-[color:var(--ink)] hover:bg-[color:var(--tomato)] hover:text-white hover:border-transparent transition-colors"
+        >
+          <ClipboardList className="w-4 h-4" />
+          <span>طلباتي</span>
+        </Link>
       </div>
     </header>
   );
 }
+
 
 function MenuStep(props: {
   cart: CartItem[];
