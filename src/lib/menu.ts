@@ -21,6 +21,8 @@ const pizzaSauce = pizzaSauceAsset.url;
 const pizzaMushroom = pizzaMushroomAsset.url;
 const pizzaVeggie = pizzaVeggieAsset.url;
 const pizzaMargherita = pizzaMargheritaAsset.url;
+const pizzaPepperoni = pizzaPepperoniAsset.url;
+const pizzaSalami = pizzaSalamiAsset.url;
 
 export type PizzaSize = "S" | "M" | "L";
 
