@@ -3,8 +3,8 @@ import pizzaShawarmaMeatAsset from "@/assets/pizza-shawarma-meat.jpg.asset.json"
 import pizzaShawarmaChickenAsset from "@/assets/pizza-shawarma-chicken.jpg.asset.json";
 import pizzaKebabAsset from "@/assets/pizza-kebab.jpg.asset.json";
 import pizzaSmokedBeefAsset from "@/assets/pizza-smoked-beef.jpg.asset.json";
-import pizzaPepperoni from "@/assets/pizza-pepperoni.jpg";
-import pizzaSalami from "@/assets/pizza-salami.jpg";
+import pizzaPepperoniAsset from "@/assets/pizza-pepperoni.jpg.asset.json";
+import pizzaSalamiAsset from "@/assets/pizza-salami.jpg.asset.json";
 import pizzaTurkeyAsset from "@/assets/pizza-turkey.jpg.asset.json";
 import pizzaSauceAsset from "@/assets/pizza-sauce.jpg.asset.json";
 import pizzaMushroomAsset from "@/assets/pizza-mushroom.jpg.asset.json";
