@@ -17,9 +17,11 @@ import {
   cartTotal,
   formatPrice,
 } from "@/lib/menu";
-import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone, Lock } from "lucide-react";
+import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone, Lock, ClipboardList } from "lucide-react";
 import nawrasLogo from "@/assets/nawras-logo.jpg.asset.json";
 import { assetUrl } from "@/lib/asset-url";
+import { saveMyOrder } from "@/lib/my-orders";
+
 
 
 export const Route = createFileRoute("/")({
@@ -154,10 +156,18 @@ function Header() {
             <div className="text-[11px] uppercase tracking-widest text-[color:var(--tomato)] mt-1">Nawras Pizza</div>
           </div>
         </div>
+        <Link
+          to="/my-orders"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-[color:var(--line)] text-sm font-bold text-[color:var(--ink)] hover:bg-[color:var(--tomato)] hover:text-white hover:border-transparent transition-colors"
+        >
+          <ClipboardList className="w-4 h-4" />
+          <span>طلباتي</span>
+        </Link>
       </div>
     </header>
   );
 }
+
 
 function MenuStep(props: {
   cart: CartItem[];
@@ -375,6 +385,7 @@ function CheckoutStep(props: {
           total,
         },
       });
+      saveMyOrder({ id: res.id, token: res.tracking_token });
       navigate({ to: "/track/$token", params: { token: res.tracking_token } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "تعذّر إرسال الطلب");
