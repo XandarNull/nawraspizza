@@ -17,7 +17,7 @@ import {
   cartTotal,
   formatPrice,
 } from "@/lib/menu";
-import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone } from "lucide-react";
+import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone, Lock } from "lucide-react";
 import nawrasLogo from "@/assets/nawras-logo.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
