@@ -124,7 +124,12 @@ function OrderPage() {
             </a>
           ))}
         </div>
-        <Link to="/dashboard" className="underline underline-offset-4 hover:text-[color:var(--tomato)]">لوحة تحكم المطعم</Link>
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--navy-deep)] text-white text-sm font-bold hover:bg-[color:var(--tomato)] transition-colors"
+        >
+          <Lock className="w-4 h-4" /> لوحة تحكم المطعم
+        </Link>
       </footer>
     </div>
   );
