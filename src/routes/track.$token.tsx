@@ -46,11 +46,28 @@ function TrackPage() {
     }
   }, [fetchOrder, token]);
 
+  const status = order?.status;
+  const isTerminal = status === "done" || status === "cancelled";
+
   useEffect(() => {
     refresh();
-    const id = setInterval(refresh, 5000);
-    return () => clearInterval(id);
-  }, [refresh]);
+    // Once the order reaches a final state, stop polling — the status
+    // won't change anymore, so further requests are pure waste.
+    if (isTerminal) return;
+    const tick = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      refresh();
+    };
+    const id = setInterval(tick, 8000);
+    const onVisible = () => {
+      if (!document.hidden) tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [refresh, isTerminal]);
 
   if (order === undefined) {
     return (
