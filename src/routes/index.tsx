@@ -108,6 +108,12 @@ function OrderPage() {
       <Toaster richColors position="top-center" />
       <Header />
 
+      {!state.is_open && (
+        <div className="bg-[color:var(--tomato)] text-white text-center text-sm py-2 font-bold">
+          🚫 المطعم مغلق حالياً — لا يمكن استقبال الطلبات
+        </div>
+      )}
+
       {step === "menu" && (
         <MenuStep
           cart={cart}
@@ -119,6 +125,8 @@ function OrderPage() {
           addDrink={addDrink}
           changeQty={changeQty}
           removeItem={removeItem}
+          isOpen={state.is_open}
+          unavailableSet={unavailableSet}
           onCheckout={() => setStep("checkout")}
         />
       )}
