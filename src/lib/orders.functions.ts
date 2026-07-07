@@ -204,6 +204,21 @@ export const createOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
+      .from("restaurant_settings")
+      .select("is_open, unavailable_pizzas")
+      .eq("id", 1)
+      .maybeSingle();
+    if (settings && settings.is_open === false) {
+      throw new Error("المطعم مغلق حالياً — لا يمكن استقبال الطلبات");
+    }
+    const unavailable = new Set((settings?.unavailable_pizzas as string[] | null) ?? []);
+    for (const it of data.items as Array<Record<string, unknown>>) {
+      if (it?.kind === "pizza" && typeof it.pizzaId === "string" && unavailable.has(it.pizzaId)) {
+        throw new Error("أحد الأصناف غير متوفر حالياً — يرجى تحديث الطلب");
+      }
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .insert({
