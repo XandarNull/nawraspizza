@@ -16,13 +16,17 @@ import {
   Share2,
   Lock,
 } from "lucide-react";
-import { formatPrice } from "@/lib/menu";
+import { PIZZAS, formatPrice } from "@/lib/menu";
 import {
   dashboardLogin,
   dashboardLogout,
   dashboardSession,
   listOrders,
   updateOrderStatus,
+  getRestaurantState,
+  setRestaurantOpen,
+  setUnavailablePizzas,
+  deleteAllOrders,
   type OrderDTO,
 } from "@/lib/orders.functions";
 
