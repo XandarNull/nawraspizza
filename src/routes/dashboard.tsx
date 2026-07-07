@@ -713,3 +713,165 @@ function StatusPill({ status }: { status: string }) {
     </span>
   );
 }
+
+function RestaurantControls() {
+  const getState = useServerFn(getRestaurantState);
+  const setOpen = useServerFn(setRestaurantOpen);
+  const setUnavailable = useServerFn(setUnavailablePizzas);
+  const deleteAll = useServerFn(deleteAllOrders);
+
+  const [isOpen, setIsOpen] = useState<boolean | null>(null);
+  const [unavailable, setUnavailableIds] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showPizzas, setShowPizzas] = useState(false);
+
+  useEffect(() => {
+    getState()
+      .then((s) => {
+        setIsOpen(s.is_open);
+        setUnavailableIds(s.unavailable_pizzas ?? []);
+      })
+      .catch(() => {});
+  }, [getState]);
+
+  const toggleOpen = async () => {
+    if (isOpen === null) return;
+    const next = !isOpen;
+    setIsOpen(next);
+    setSaving(true);
+    try {
+      await setOpen({ data: { is_open: next } });
+      toast.success(next ? "تم فتح المطعم" : "تم إغلاق المطعم");
+    } catch (e) {
+      setIsOpen(!next);
+      toast.error(e instanceof Error ? e.message : "فشل التحديث");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const togglePizza = async (id: string) => {
+    const next = unavailable.includes(id)
+      ? unavailable.filter((x) => x !== id)
+      : [...unavailable, id];
+    setUnavailableIds(next);
+    try {
+      await setUnavailable({ data: { ids: next } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل التحديث");
+    }
+  };
+
+  const doDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteAll();
+      toast.success("تم حذف كل الطلبات");
+      setConfirmDelete(false);
+      window.location.reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل الحذف");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <section className="mb-6 bg-white border border-[color:var(--line)] rounded-2xl p-4 sm:p-5">
+      <div className="flex flex-wrap items-center gap-3 justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className={
+              "w-3 h-3 rounded-full " +
+              (isOpen ? "bg-emerald-500" : isOpen === false ? "bg-[color:var(--tomato)]" : "bg-neutral-300")
+            }
+          />
+          <div>
+            <div className="font-serif text-lg">
+              حالة المطعم: {isOpen === null ? "…" : isOpen ? "مفتوح" : "مغلق"}
+            </div>
+            <div className="text-xs text-[color:var(--ink-muted)]">
+              عند الإغلاق تُعطَّل الطلبات من الموقع.
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={toggleOpen}
+            disabled={saving || isOpen === null}
+            className={
+              "px-4 py-2 rounded-full text-sm font-bold transition-colors disabled:opacity-60 " +
+              (isOpen
+                ? "bg-[color:var(--tomato)] text-white hover:bg-[color:var(--tomato-dark)]"
+                : "bg-emerald-600 text-white hover:bg-emerald-700")
+            }
+          >
+            {isOpen ? "إغلاق المطعم" : "فتح المطعم"}
+          </button>
+          <button
+            onClick={() => setShowPizzas((v) => !v)}
+            className="px-4 py-2 rounded-full text-sm font-bold border border-[color:var(--line)] hover:border-[color:var(--tomato)]"
+          >
+            {showPizzas ? "إخفاء" : "تحديد"} الأصناف غير المتوفرة ({unavailable.length})
+          </button>
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="px-4 py-2 rounded-full text-sm font-bold border border-[color:var(--tomato)] text-[color:var(--tomato)] hover:bg-[color:var(--tomato)] hover:text-white"
+          >
+            حذف كل الطلبات (بداية يوم جديد)
+          </button>
+        </div>
+      </div>
+
+      {showPizzas && (
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {PIZZAS.map((p) => {
+            const off = unavailable.includes(p.id);
+            return (
+              <button
+                key={p.id}
+                onClick={() => togglePizza(p.id)}
+                className={
+                  "px-3 py-2 rounded-xl text-sm border text-right transition-colors " +
+                  (off
+                    ? "bg-[color:var(--tomato)] text-white border-[color:var(--tomato)]"
+                    : "bg-white border-[color:var(--line)] hover:border-[color:var(--tomato)]")
+                }
+              >
+                {off ? "🚫 " : "✓ "} {p.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {confirmDelete && (
+        <Modal onClose={() => !deleting && setConfirmDelete(false)}>
+          <h3 className="font-serif text-xl">تأكيد حذف كل الطلبات</h3>
+          <p className="text-sm text-[color:var(--ink-muted)] mt-2">
+            سيتم حذف جميع الطلبات (الجديدة، الجارية، والمكتملة) بشكل نهائي.
+            لا يمكن التراجع عن هذا الإجراء.
+          </p>
+          <div className="flex gap-2 mt-5 justify-end">
+            <button
+              onClick={() => setConfirmDelete(false)}
+              disabled={deleting}
+              className="px-4 py-2 rounded-full text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]"
+            >
+              تراجع
+            </button>
+            <button
+              onClick={doDelete}
+              disabled={deleting}
+              className="px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)] disabled:opacity-60"
+            >
+              {deleting ? "جارِ الحذف…" : "نعم، احذف الكل"}
+            </button>
+          </div>
+        </Modal>
+      )}
+    </section>
+  );
+}
