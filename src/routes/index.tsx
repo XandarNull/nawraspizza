@@ -513,6 +513,9 @@ function CheckoutStep(props: {
             <span className="tracking-widest text-xs">الإجمالي</span>
             <span className="font-serif text-3xl">{formatPrice(total)}</span>
           </div>
+          <div className="mt-2 text-xs text-[color:var(--cream)]/70">
+            سعر التوصيل: 1000 د.ع داخل المنطقة, 2000 د.ع للمناطق المجاورة
+          </div>
           <ul className="mt-3 text-sm space-y-1 text-[color:var(--cream)]/80">
             {cart.map((i, k) => (
               <li key={k} className="flex justify-between gap-2">
