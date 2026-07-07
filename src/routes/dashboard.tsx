@@ -360,6 +360,7 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
       )}
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <RestaurantControls />
         {orders === null && <p className="text-[color:var(--ink-muted)]">جارِ التحميل…</p>}
         {orders !== null && filtered.length === 0 && (
           <div className="text-center py-16 text-[color:var(--ink-muted)]">
