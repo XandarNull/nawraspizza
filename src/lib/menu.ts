@@ -62,19 +62,19 @@ const STANDARD = { S: 5000, M: 7000, L: 10000 } as const;
 const BASIC = { S: 4000, M: 6000, L: 8000 } as const;
 
 export const PIZZAS: Pizza[] = [
-  { id: "veggie",           name: "خضراوات",            description: "صلصة خاصة, جبن موزريلا, فلفل, طماطم, زيتون",                                prices: { ...BASIC },    image: pizzaVeggie },
-  { id: "margherita",       name: "مارغاريتا",          description: "صلصة خاصة, جبن موزريلا",                                                    prices: { ...BASIC },    image: pizzaMargherita },
-  { id: "shawarma-meat",    name: "شاورما لحم",         description: "صلصة خاصة, شاورما لحم, جبن موزريلا, فلفل, طماطم, زيتون",                    prices: { ...STANDARD }, image: pizzaShawarmaMeat },
-  { id: "mushroom",         name: "فطر",                description: "صلصة خاصة, جبن موزريلا, فلفل, طماطم, زيتون, فطر",                           prices: { ...STANDARD }, image: pizzaMushroom },
   { id: "mixed",            name: "مشكل",               description: "صلصة خاصة, شاورما لحم, شاورما دجاج, جبن موزريلا, فلفل, طماطم, زيتون",       prices: { ...STANDARD }, image: pizzaMixed },
-  { id: "honey",            name: "عسلية",              description: "صلصة عسل مع حليب, جبن موزريلا",                                             prices: { ...STANDARD }, image: pizzaHoney },
-  { id: "turkey",           name: "حبش",                description: "صلصة خاصة, جبن موزريلا, حبش",                                               prices: { ...STANDARD }, image: pizzaTurkey },
-  { id: "kebab",            name: "كباب لحم",           description: "صلصة خاصة, جبن موزريلا, كباب لحم عراقي, فلفل, طماطم, زيتون",                prices: { ...STANDARD }, image: pizzaKebab },
-  { id: "sauce",            name: "صوصج",               description: "صلصة خاصة, جبن موزريلا, صوصج",                                              prices: { ...STANDARD }, image: pizzaSauce },
+  { id: "shawarma-meat",    name: "شاورما لحم",         description: "صلصة خاصة, شاورما لحم, جبن موزريلا, فلفل, طماطم, زيتون",                    prices: { ...STANDARD }, image: pizzaShawarmaMeat },
   { id: "shawarma-chicken", name: "شاورما دجاج",        description: "صلصة خاصة, شاورما دجاج, جبن موزريلا, فلفل, طماطم, زيتون",                   prices: { ...STANDARD }, image: pizzaShawarmaChicken },
+  { id: "kebab",            name: "كباب لحم",           description: "صلصة خاصة, جبن موزريلا, كباب لحم عراقي, فلفل, طماطم, زيتون",                prices: { ...STANDARD }, image: pizzaKebab },
   { id: "smoked-beef",      name: "لحم مدخن",           description: "صلصة خاصة, جبن موزريلا, شرائح لحم مدخن",                                    prices: { ...STANDARD }, image: pizzaSmokedBeef },
   { id: "pepperoni",        name: "ببروني",             description: "صلصة خاصة, جبن موزريلا, شرائح ببروني",                                      prices: { ...STANDARD }, image: pizzaPepperoni },
   { id: "salami",           name: "سلامي",              description: "صلصة خاصة, جبن موزريلا, شرائح سلامي",                                       prices: { ...STANDARD }, image: pizzaSalami },
+  { id: "turkey",           name: "حبش",                description: "صلصة خاصة, جبن موزريلا, حبش",                                               prices: { ...STANDARD }, image: pizzaTurkey },
+  { id: "sauce",            name: "صوصج",               description: "صلصة خاصة, جبن موزريلا, صوصج",                                              prices: { ...STANDARD }, image: pizzaSauce },
+  { id: "mushroom",         name: "فطر",                description: "صلصة خاصة, جبن موزريلا, فلفل, طماطم, زيتون, فطر",                           prices: { ...STANDARD }, image: pizzaMushroom },
+  { id: "veggie",           name: "خضراوات",            description: "صلصة خاصة, جبن موزريلا, فلفل, طماطم, زيتون",                                prices: { ...BASIC },    image: pizzaVeggie },
+  { id: "margherita",       name: "مارغاريتا",          description: "صلصة خاصة, جبن موزريلا",                                                    prices: { ...BASIC },    image: pizzaMargherita },
+  { id: "honey",            name: "عسلية",              description: "صلصة عسل مع حليب, جبن موزريلا",                                             prices: { ...STANDARD }, image: pizzaHoney },
   { id: "pistachio",        name: "بستاشيو",            description: "صلصة بستاشيو خاصة, جبن موزريلا",                                            prices: { ...STANDARD }, image: pizzaPistachio },
 ];
 

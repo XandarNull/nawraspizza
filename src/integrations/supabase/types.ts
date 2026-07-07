@@ -59,6 +59,27 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurant_settings: {
+        Row: {
+          id: number
+          is_open: boolean
+          unavailable_pizzas: string[]
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          is_open?: boolean
+          unavailable_pizzas?: string[]
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          is_open?: boolean
+          unavailable_pizzas?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

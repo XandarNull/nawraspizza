@@ -123,6 +123,62 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+// ---------- Restaurant settings ----------
+
+export type RestaurantState = { is_open: boolean; unavailable_pizzas: string[] };
+
+export const getRestaurantState = createServerFn({ method: "GET" }).handler(async (): Promise<RestaurantState> => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("restaurant_settings")
+    .select("is_open, unavailable_pizzas")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return {
+    is_open: data?.is_open ?? true,
+    unavailable_pizzas: (data?.unavailable_pizzas as string[] | null) ?? [],
+  };
+});
+
+export const setRestaurantOpen = createServerFn({ method: "POST" })
+  .inputValidator((data: { is_open: boolean }) => data)
+  .handler(async ({ data }) => {
+    await requireDashAuth();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("restaurant_settings")
+      .update({ is_open: data.is_open, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const setUnavailablePizzas = createServerFn({ method: "POST" })
+  .inputValidator((data: { ids: string[] }) => {
+    if (!Array.isArray(data?.ids)) throw new Error("Invalid ids");
+    const ids = data.ids.filter((x) => typeof x === "string").slice(0, 100);
+    return { ids };
+  })
+  .handler(async ({ data }) => {
+    await requireDashAuth();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("restaurant_settings")
+      .update({ unavailable_pizzas: data.ids, updated_at: new Date().toISOString() })
+      .eq("id", 1);
+    if (error) throw new Error(error.message);
+    return { ok: true as const };
+  });
+
+export const deleteAllOrders = createServerFn({ method: "POST" }).handler(async () => {
+  await requireDashAuth();
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { error } = await supabaseAdmin.from("orders").delete().not("id", "is", null);
+  if (error) throw new Error(error.message);
+  return { ok: true as const };
+});
+
 // ---------- Order creation (public) ----------
 
 export const createOrder = createServerFn({ method: "POST" })
@@ -148,6 +204,20 @@ export const createOrder = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settings } = await supabaseAdmin
+      .from("restaurant_settings")
+      .select("is_open, unavailable_pizzas")
+      .eq("id", 1)
+      .maybeSingle();
+    if (settings && settings.is_open === false) {
+      throw new Error("المطعم مغلق حالياً — لا يمكن استقبال الطلبات");
+    }
+    const unavailable = new Set((settings?.unavailable_pizzas as string[] | null) ?? []);
+    for (const it of data.items as Array<Record<string, unknown>>) {
+      if (it?.kind === "pizza" && typeof it.pizzaId === "string" && unavailable.has(it.pizzaId)) {
+        throw new Error("أحد الأصناف غير متوفر حالياً — يرجى تحديث الطلب");
+      }
+    }
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .insert({
