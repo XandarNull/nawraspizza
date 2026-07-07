@@ -50,6 +50,18 @@ function OrderPage() {
   const [sizeById, setSizeById] = useState<Record<string, PizzaSize>>(
     () => Object.fromEntries(PIZZAS.map((p) => [p.id, "M" as PizzaSize])),
   );
+  const [state, setState] = useState<RestaurantState>({ is_open: true, unavailable_pizzas: [] });
+  const fetchState = useServerFn(getRestaurantState);
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => {
+      fetchState().then((s) => { if (!cancelled) setState(s); }).catch(() => {});
+    };
+    load();
+    const id = setInterval(load, 15000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [fetchState]);
+  const unavailableSet = new Set(state.unavailable_pizzas);
 
   const addPizza = (pizzaId: string) => {
     const size = sizeById[pizzaId] ?? "M";
