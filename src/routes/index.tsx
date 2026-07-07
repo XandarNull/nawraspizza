@@ -199,9 +199,15 @@ function MenuStep(props: {
   addDrink: (id: string) => void;
   changeQty: (i: number, d: number) => void;
   removeItem: (i: number) => void;
+  isOpen: boolean;
+  unavailableSet: Set<string>;
   onCheckout: () => void;
 }) {
-  const { cart, total, totalCount, sizeById, setSizeById, addPizza, addDrink, changeQty, removeItem, onCheckout } = props;
+  const { cart, total, totalCount, sizeById, setSizeById, addPizza, addDrink, changeQty, removeItem, isOpen, unavailableSet, onCheckout } = props;
+
+  const scrollToCart = () => {
+    document.getElementById("cart-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-32">
@@ -220,8 +226,15 @@ function MenuStep(props: {
           {PIZZAS.map((p) => {
             const size = sizeById[p.id] ?? "M";
             const price = pizzaPrice(p.id, size);
+            const disabled = !isOpen || unavailableSet.has(p.id);
             return (
-              <article key={p.id} className="bg-white border border-[color:var(--line)] rounded-2xl overflow-hidden flex flex-col">
+              <article
+                key={p.id}
+                className={
+                  "bg-white border border-[color:var(--line)] rounded-2xl overflow-hidden flex flex-col relative " +
+                  (disabled ? "opacity-50 grayscale" : "")
+                }
+              >
                 <div className="relative aspect-[4/3] bg-[color:var(--cream)] overflow-hidden">
                   <img
                     src={p.image}
@@ -232,7 +245,13 @@ function MenuStep(props: {
                     height={576}
                     className="w-full h-full object-cover"
                   />
-
+                  {disabled && (
+                    <div className="absolute inset-0 grid place-items-center bg-black/40">
+                      <span className="px-3 py-1 rounded-full bg-white text-[color:var(--ink)] text-xs font-bold">
+                        {!isOpen ? "المطعم مغلق" : "غير متوفر حالياً"}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <div>
@@ -263,7 +282,8 @@ function MenuStep(props: {
                     <div className="font-serif text-2xl">{formatPrice(price)}</div>
                     <button
                       onClick={() => addPizza(p.id)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)] transition-colors"
+                      disabled={disabled}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       <Plus className="w-4 h-4" /> أضف
                     </button>
@@ -279,7 +299,7 @@ function MenuStep(props: {
         <h2 id="drinks" className="font-serif text-2xl mb-4">المشروبات</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {DRINKS.map((d) => (
-            <div key={d.id} className="bg-white border border-[color:var(--line)] rounded-xl px-4 py-3 flex items-center justify-between">
+            <div key={d.id} className={"bg-white border border-[color:var(--line)] rounded-xl px-4 py-3 flex items-center justify-between " + (!isOpen ? "opacity-50" : "")}>
               <div className="flex items-center gap-3">
                 <div className="text-2xl" aria-hidden>{d.emoji}</div>
                 <div>
@@ -289,7 +309,8 @@ function MenuStep(props: {
               </div>
               <button
                 onClick={() => addDrink(d.id)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-[color:var(--ink)] text-sm font-bold hover:bg-[color:var(--ink)] hover:text-[color:var(--cream)] transition-colors"
+                disabled={!isOpen}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-[color:var(--ink)] text-sm font-bold hover:bg-[color:var(--ink)] hover:text-[color:var(--cream)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Plus className="w-4 h-4" /> أضف
               </button>
@@ -299,7 +320,7 @@ function MenuStep(props: {
       </section>
 
       {cart.length > 0 && (
-        <section className="bg-white border border-[color:var(--line)] rounded-2xl p-5">
+        <section id="cart-section" className="bg-white border border-[color:var(--line)] rounded-2xl p-5 scroll-mt-24">
           <h2 className="font-serif text-2xl mb-4 flex items-center gap-2">
             <ShoppingBag className="w-5 h-5" /> طلبك
           </h2>
@@ -335,13 +356,25 @@ function MenuStep(props: {
             <div>
               <div className="text-xs text-[color:var(--ink-muted)] tracking-widest">الإجمالي · {totalCount} قطعة</div>
               <div className="font-serif text-2xl">{formatPrice(total)}</div>
+              <div className="text-[11px] text-[color:var(--ink-muted)] mt-0.5">
+                سعر التوصيل: 1000 د.ع داخل المنطقة, 2000 د.ع للمناطق المجاورة
+              </div>
             </div>
-            <button
-              onClick={onCheckout}
-              className="px-5 py-3 rounded-full bg-[color:var(--tomato)] text-white font-bold hover:bg-[color:var(--tomato-dark)] transition-colors"
-            >
-              متابعة إلى التوصيل
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={scrollToCart}
+                className="px-4 py-3 rounded-full border border-[color:var(--ink)] text-[color:var(--ink)] font-bold hover:bg-[color:var(--ink)] hover:text-[color:var(--cream)] transition-colors text-sm sm:text-base"
+              >
+                مراجعة الطلب
+              </button>
+              <button
+                onClick={onCheckout}
+                disabled={!isOpen}
+                className="px-5 py-3 rounded-full bg-[color:var(--tomato)] text-white font-bold hover:bg-[color:var(--tomato-dark)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-sm sm:text-base"
+              >
+                متابعة إلى التوصيل
+              </button>
+            </div>
           </div>
         </div>
       )}
