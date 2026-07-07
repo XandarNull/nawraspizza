@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { createOrder } from "@/lib/orders.functions";
+import { createOrder, getRestaurantState, type RestaurantState } from "@/lib/orders.functions";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import {
