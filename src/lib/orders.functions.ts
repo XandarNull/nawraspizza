@@ -218,7 +218,6 @@ export const createOrder = createServerFn({ method: "POST" })
         throw new Error("أحد الأصناف غير متوفر حالياً — يرجى تحديث الطلب");
       }
     }
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("orders")
       .insert({
