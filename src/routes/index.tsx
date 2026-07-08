@@ -305,7 +305,11 @@ function MenuStep(props: {
           {DRINKS.map((d) => (
             <div key={d.id} className={"bg-white border border-[color:var(--line)] rounded-xl px-4 py-3 flex items-center justify-between " + (!isOpen ? "opacity-50" : "")}>
               <div className="flex items-center gap-3">
-                <div className="text-2xl" aria-hidden>{d.emoji}</div>
+                {d.image ? (
+                  <img src={d.image} alt={d.name} className="w-12 h-12 object-contain" loading="lazy" />
+                ) : (
+                  <div className="text-2xl" aria-hidden>{d.emoji}</div>
+                )}
                 <div>
                   <div className="font-medium">{d.name}</div>
                   <div className="text-sm text-[color:var(--ink-muted)]">{formatPrice(d.price)}</div>
