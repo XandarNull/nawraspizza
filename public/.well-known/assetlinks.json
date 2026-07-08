@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.xandar.nawraspizza.twa",
+        "sha256_cert_fingerprints": ["28:23:ED:05:E5:EB:28:AF:9A:57:4A:FD:94:CC:C9:13:B3:1B:53:68:AE:C9:B6:DE:22:5D:2A:0A:3B:F6:DA:FA"]
+      }
+    }]
