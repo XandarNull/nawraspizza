@@ -330,24 +330,30 @@ function MenuStep(props: {
           </h2>
           <ul className="divide-y divide-[color:var(--line)]">
             {cart.map((item, i) => (
-              <li key={i} className="py-3 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{itemLabel(item)}</div>
-                  <div className="text-sm text-[color:var(--ink-muted)]">{formatPrice(itemUnitPrice(item))} للواحد</div>
+              <li key={i} className="py-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
+                <div className="min-w-0 col-span-2 sm:col-span-1">
+                  <div className="font-medium break-words">{itemLabel(item)}</div>
+                  <div className="text-xs text-[color:var(--ink-muted)] mt-0.5">
+                    {formatPrice(itemUnitPrice(item))} للواحد · الإجمالي{" "}
+                    <span className="font-bold text-[color:var(--ink)]">
+                      {formatPrice(itemUnitPrice(item) * item.qty)}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 border border-[color:var(--line)] rounded-full">
-                  <button onClick={() => changeQty(i, -1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="تقليل">
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <span className="w-6 text-center text-sm font-bold">{item.qty}</span>
-                  <button onClick={() => changeQty(i, 1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="زيادة">
-                    <Plus className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-2 justify-end col-span-2 sm:col-span-1">
+                  <div className="flex items-center gap-1 border border-[color:var(--line)] rounded-full">
+                    <button onClick={() => changeQty(i, -1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="تقليل">
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="w-6 text-center text-sm font-bold">{item.qty}</span>
+                    <button onClick={() => changeQty(i, 1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="زيادة">
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <button onClick={() => removeItem(i)} className="text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] p-1" aria-label="حذف">
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="w-24 text-left font-bold">{formatPrice(itemUnitPrice(item) * item.qty)}</div>
-                <button onClick={() => removeItem(i)} className="text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] p-1" aria-label="حذف">
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </li>
             ))}
           </ul>
