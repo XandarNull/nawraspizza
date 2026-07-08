@@ -409,24 +409,14 @@ function CheckoutStep(props: {
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState<SavedAddress[]>([]);
   const [selectedSavedId, setSelectedSavedId] = useState<string | null>(null);
-  const [saveThis, setSaveThis] = useState(true);
+  const [saveThis, setSaveThis] = useState(false);
   const [saveLabel, setSaveLabel] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
-    const list = loadAddresses();
-    setSaved(list);
-    // Auto-select most recent address on first arrival
-    if (list.length > 0) {
-      const a = list[0];
-      setSelectedSavedId(a.id);
-      setName(a.name);
-      setPhone(a.phone);
-      setAddress(a.address);
-      if (a.latitude != null && a.longitude != null) {
-        setCoords({ lat: a.latitude, lng: a.longitude });
-      }
-    }
+    setSaved(loadAddresses());
+    // Note: user must explicitly tap a saved address to fill the form.
   }, []);
 
   const pickSaved = (a: SavedAddress) => {
@@ -442,6 +432,7 @@ function CheckoutStep(props: {
     const next = loadAddresses();
     setSaved(next);
     if (selectedSavedId === id) setSelectedSavedId(null);
+    setConfirmDeleteId(null);
   };
 
   const locate = () => {
