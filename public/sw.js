@@ -1,7 +1,59 @@
-// Minimal service worker to satisfy Chrome/Android PWA install criteria.
-// No caching — every request goes to the network unchanged.
-self.addEventListener("install", () => self.skipWaiting());
-self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
-self.addEventListener("fetch", () => {
-  // Passthrough. Registering a fetch listener is what makes the app installable.
+// Minimal service worker for Nawras Pizza PWA.
+// - Satisfies Chrome/Android/TWA install criteria (has a fetch handler).
+// - Precaches a tiny offline shell so navigation still works with no network.
+// - Never caches HTML aggressively: navigations use network-first, offline.html is the fallback only.
+
+const CACHE = "nawras-offline-v2";
+const OFFLINE_URL = "/offline.html";
+const PRECACHE = [
+  OFFLINE_URL,
+  "/manifest.webmanifest",
+  "/nawras-icon-192.png",
+  "/nawras-icon-512.png",
+  "/favicon.png",
+];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()),
+  );
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+      await self.clients.claim();
+    })(),
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET") return;
+
+  // Network-first for page navigations, fall back to offline shell.
+  if (req.mode === "navigate") {
+    event.respondWith(
+      (async () => {
+        try {
+          return await fetch(req);
+        } catch {
+          const cache = await caches.open(CACHE);
+          const offline = await cache.match(OFFLINE_URL);
+          return offline || new Response("Offline", { status: 503 });
+        }
+      })(),
+    );
+    return;
+  }
+
+  // For our small precached static assets, serve from cache if available.
+  const url = new URL(req.url);
+  if (url.origin === self.location.origin && PRECACHE.includes(url.pathname)) {
+    event.respondWith(
+      caches.match(req).then((r) => r || fetch(req)),
+    );
+  }
 });

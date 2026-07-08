@@ -1,15 +1,19 @@
 {
-  "name": "Nawras Pizza",
+  "id": "/",
+  "name": "Nawras Pizza - نورس بيتزا",
   "short_name": "Nawras Pizza",
-  "description": "اطلب بيتزا نورس مع التوصيل السريع.",
+  "description": "اطلب بيتزا نورس مع التوصيل السريع. اختر البيتزا والحجم والمشروبات، شارك موقعك، ونحن نوصلها ساخنة.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait",
   "background_color": "#fbf6ec",
   "theme_color": "#c8341f",
   "lang": "ar",
   "dir": "rtl",
+  "categories": ["food", "lifestyle", "shopping"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/nawras-icon-192.png",
@@ -28,6 +32,45 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "824x1830",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "قائمة البيتزا"
+    },
+    {
+      "src": "/screenshots/mobile-2.png",
+      "sizes": "824x1830",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "طلبك والتوصيل"
+    },
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "مطعم نورس بيتزا"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "طلباتي",
+      "short_name": "طلباتي",
+      "description": "عرض طلباتك السابقة",
+      "url": "/my-orders",
+      "icons": [{ "src": "/nawras-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "تثبيت التطبيق",
+      "short_name": "تثبيت",
+      "description": "تثبيت تطبيق نورس بيتزا",
+      "url": "/install",
+      "icons": [{ "src": "/nawras-icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
