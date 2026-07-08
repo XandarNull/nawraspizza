@@ -92,14 +92,12 @@ export type Drink = {
   image?: string;
 };
 
-export const DRINKS: Drink[] = [
-  { id: "pepsi",   name: "بيبسي ٣٣٠ مل",          price: 500,  emoji: "🥤", image: drinkPepsiAsset.url },
-  { id: "miranda", name: "ميراندا برتقال ٣٣٠ مل", price: 500,  emoji: "🍊", image: drinkMirandaAsset.url },
-  { id: "seven",   name: "سفن أب ٣٣٠ مل",         price: 500,  emoji: "🥤", image: drinkSevenAsset.url },
-  { id: "dew",     name: "ديو ٣٣٠ مل",            price: 500,  emoji: "🥤", image: drinkDewAsset.url },
-  { id: "pepsi-family", name: "بطل بيبسي عائلي",  price: 1000, emoji: "🥤", image: drinkPepsiFamilyAsset.url },
-  { id: "water",   name: "ماء ٥٠٠ مل",            price: 250,  emoji: "💧", image: drinkWaterAsset.url },
-];
+const drinkPepsi = assetUrl(drinkPepsiAsset);
+const drinkMiranda = assetUrl(drinkMirandaAsset);
+const drinkSeven = assetUrl(drinkSevenAsset);
+const drinkDew = assetUrl(drinkDewAsset);
+const drinkPepsiFamily = assetUrl(drinkPepsiFamilyAsset);
+const drinkWater = assetUrl(drinkWaterAsset);
 
 export type CartPizza = {
   kind: "pizza";
