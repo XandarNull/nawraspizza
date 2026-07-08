@@ -785,72 +785,93 @@ function RestaurantControls() {
   };
 
   return (
-    <section className="mb-6 bg-white border border-[color:var(--line)] rounded-2xl p-4 sm:p-5">
-      <div className="flex flex-wrap items-center gap-3 justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className={
-              "w-3 h-3 rounded-full " +
-              (isOpen ? "bg-emerald-500" : isOpen === false ? "bg-[color:var(--tomato)]" : "bg-neutral-300")
-            }
-          />
-          <div>
-            <div className="font-serif text-lg">
-              حالة المطعم: {isOpen === null ? "…" : isOpen ? "مفتوح" : "مغلق"}
-            </div>
-            <div className="text-xs text-[color:var(--ink-muted)]">
-              عند الإغلاق تُعطَّل الطلبات من الموقع.
-            </div>
+    <section className="bg-[color:var(--cream)] border border-[color:var(--line)] rounded-2xl p-3 w-full md:w-64 shrink-0">
+      <div className="flex items-center gap-2">
+        <div
+          className={
+            "w-2.5 h-2.5 rounded-full shrink-0 " +
+            (isOpen ? "bg-emerald-500" : isOpen === false ? "bg-[color:var(--tomato)]" : "bg-neutral-300")
+          }
+        />
+        <div className="min-w-0">
+          <div className="font-bold text-sm leading-tight">
+            حالة المطعم:{" "}
+            <span className={isOpen ? "text-emerald-700" : "text-[color:var(--tomato)]"}>
+              {isOpen === null ? "…" : isOpen ? "مفتوح" : "مغلق"}
+            </span>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={toggleOpen}
-            disabled={saving || isOpen === null}
-            className={
-              "px-4 py-2 rounded-full text-sm font-bold transition-colors disabled:opacity-60 " +
-              (isOpen
-                ? "bg-[color:var(--tomato)] text-white hover:bg-[color:var(--tomato-dark)]"
-                : "bg-emerald-600 text-white hover:bg-emerald-700")
-            }
-          >
-            {isOpen ? "إغلاق المطعم" : "فتح المطعم"}
-          </button>
-          <button
-            onClick={() => setShowPizzas((v) => !v)}
-            className="px-4 py-2 rounded-full text-sm font-bold border border-[color:var(--line)] hover:border-[color:var(--tomato)]"
-          >
-            {showPizzas ? "إخفاء" : "تحديد"} الأصناف غير المتوفرة ({unavailable.length})
-          </button>
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="px-4 py-2 rounded-full text-sm font-bold border border-[color:var(--tomato)] text-[color:var(--tomato)] hover:bg-[color:var(--tomato)] hover:text-white"
-          >
-            حذف كل الطلبات (بداية يوم جديد)
-          </button>
+          <div className="text-[10px] text-[color:var(--ink-muted)] mt-0.5">
+            عند الإغلاق تُعطَّل الطلبات من الموقع
+          </div>
         </div>
       </div>
 
+      <div className="mt-3 grid gap-2">
+        <button
+          onClick={toggleOpen}
+          disabled={saving || isOpen === null}
+          className={
+            "w-full px-3 py-2 rounded-full text-xs font-bold transition-colors disabled:opacity-60 " +
+            (isOpen
+              ? "bg-[color:var(--tomato)] text-white hover:bg-[color:var(--tomato-dark)]"
+              : "bg-emerald-600 text-white hover:bg-emerald-700")
+          }
+        >
+          {isOpen ? "إغلاق المطعم" : "فتح المطعم"}
+        </button>
+        <button
+          onClick={() => setShowPizzas(true)}
+          className="w-full px-3 py-2 rounded-full text-xs font-bold border border-[color:var(--line)] bg-white hover:border-[color:var(--tomato)]"
+        >
+          الأصناف غير المتوفرة ({unavailable.length})
+        </button>
+        <button
+          onClick={() => setConfirmDelete(true)}
+          className="w-full px-3 py-2 rounded-full text-xs font-bold border border-[color:var(--tomato)] text-[color:var(--tomato)] bg-white hover:bg-[color:var(--tomato)] hover:text-white"
+        >
+          حذف كل الطلبات (يوم جديد)
+        </button>
+      </div>
+
       {showPizzas && (
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-          {PIZZAS.map((p) => {
-            const off = unavailable.includes(p.id);
-            return (
-              <button
-                key={p.id}
-                onClick={() => togglePizza(p.id)}
-                className={
-                  "px-3 py-2 rounded-xl text-sm border text-right transition-colors " +
-                  (off
-                    ? "bg-[color:var(--tomato)] text-white border-[color:var(--tomato)]"
-                    : "bg-white border-[color:var(--line)] hover:border-[color:var(--tomato)]")
-                }
-              >
-                {off ? "🚫 " : "✓ "} {p.name}
-              </button>
-            );
-          })}
-        </div>
+        <Modal onClose={() => setShowPizzas(false)}>
+          <div className="flex items-center justify-between">
+            <h3 className="font-serif text-xl">الأصناف غير المتوفرة</h3>
+            <span className="text-xs text-[color:var(--ink-muted)]">
+              {unavailable.length} محدد
+            </span>
+          </div>
+          <p className="text-xs text-[color:var(--ink-muted)] mt-1">
+            اضغط على الصنف لتفعيل/إلغاء التوفر. يُخفَّى الصنف من الموقع فوراً.
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto pr-1">
+            {PIZZAS.map((p) => {
+              const off = unavailable.includes(p.id);
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => togglePizza(p.id)}
+                  className={
+                    "px-3 py-2 rounded-xl text-sm border text-right transition-colors " +
+                    (off
+                      ? "bg-[color:var(--tomato)] text-white border-[color:var(--tomato)]"
+                      : "bg-white border-[color:var(--line)] hover:border-[color:var(--tomato)]")
+                  }
+                >
+                  {off ? "🚫 " : "✓ "} {p.name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-5 flex justify-end">
+            <button
+              onClick={() => setShowPizzas(false)}
+              className="px-4 py-2 rounded-full bg-[color:var(--ink)] text-[color:var(--cream)] text-sm font-bold"
+            >
+              تم
+            </button>
+          </div>
+        </Modal>
       )}
 
       {confirmDelete && (
@@ -881,3 +902,4 @@ function RestaurantControls() {
     </section>
   );
 }
+
