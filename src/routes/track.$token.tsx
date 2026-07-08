@@ -21,11 +21,18 @@ export const Route = createFileRoute("/track/$token")({
 type TrackedOrder = Awaited<ReturnType<typeof getOrderByToken>>;
 
 const STEPS = [
-  { key: "new", label: "استلمنا طلبك", icon: Clock },
-  { key: "preparing", label: "في الفرن", icon: ChefHat },
+  { key: "confirmed", label: "تم تأكيد الطلب", icon: ChefHat },
   { key: "out", label: "في الطريق إليك", icon: Bike },
   { key: "done", label: "تم التسليم", icon: CheckCheck },
 ] as const;
+
+// Map order.status -> highest completed step index in STEPS
+function statusStageIdx(status: string | undefined): number {
+  if (status === "done") return 2;
+  if (status === "out" || status === "preparing") return 1;
+  // "new" or unknown → nothing confirmed yet
+  return -1;
+}
 
 function TrackPage() {
   const { token } = Route.useParams();
