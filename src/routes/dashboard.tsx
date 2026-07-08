@@ -44,18 +44,18 @@ export const Route = createFileRoute("/dashboard")({
 type Order = OrderDTO;
 
 const STATUS_FLOW: { key: string; label: string; icon: typeof ChefHat; next?: string }[] = [
-  { key: "new", label: "جديد", icon: Clock, next: "preparing" },
-  { key: "preparing", label: "في الفرن", icon: ChefHat, next: "out" },
+  { key: "new", label: "جديد", icon: Clock, next: "out" },
   { key: "out", label: "في الطريق", icon: Bike, next: "done" },
   { key: "done", label: "تم التسليم", icon: CheckCheck },
 ];
 
 const STATUS_LABEL: Record<string, string> = {
   new: "جديد",
-  preparing: "في الفرن",
   out: "في الطريق",
   done: "تم التسليم",
   cancelled: "ملغى",
+  // Legacy support (older orders may still have this status)
+  preparing: "في الطريق",
 };
 
 function DashboardGate() {
