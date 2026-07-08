@@ -409,24 +409,14 @@ function CheckoutStep(props: {
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState<SavedAddress[]>([]);
   const [selectedSavedId, setSelectedSavedId] = useState<string | null>(null);
-  const [saveThis, setSaveThis] = useState(true);
+  const [saveThis, setSaveThis] = useState(false);
   const [saveLabel, setSaveLabel] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
-    const list = loadAddresses();
-    setSaved(list);
-    // Auto-select most recent address on first arrival
-    if (list.length > 0) {
-      const a = list[0];
-      setSelectedSavedId(a.id);
-      setName(a.name);
-      setPhone(a.phone);
-      setAddress(a.address);
-      if (a.latitude != null && a.longitude != null) {
-        setCoords({ lat: a.latitude, lng: a.longitude });
-      }
-    }
+    setSaved(loadAddresses());
+    // Note: user must explicitly tap a saved address to fill the form.
   }, []);
 
   const pickSaved = (a: SavedAddress) => {
@@ -442,6 +432,7 @@ function CheckoutStep(props: {
     const next = loadAddresses();
     setSaved(next);
     if (selectedSavedId === id) setSelectedSavedId(null);
+    setConfirmDeleteId(null);
   };
 
   const locate = () => {
@@ -549,7 +540,7 @@ function CheckoutStep(props: {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        removeSaved(a.id);
+                        setConfirmDeleteId(a.id);
                       }}
                       className="absolute top-2 left-2 w-6 h-6 grid place-items-center rounded-full text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] hover:bg-white"
                       aria-label="حذف العنوان"
@@ -678,6 +669,44 @@ function CheckoutStep(props: {
           {submitting ? "جارِ إرسال الطلب…" : "تأكيد الطلب"}
         </button>
       </form>
+
+      {confirmDeleteId && (() => {
+        const target = saved.find((x) => x.id === confirmDeleteId);
+        return (
+          <div
+            onClick={() => setConfirmDeleteId(null)}
+            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl border border-[color:var(--line)] w-full max-w-sm p-6 text-right"
+            >
+              <h3 className="font-serif text-xl">حذف العنوان المحفوظ؟</h3>
+              <p className="text-sm text-[color:var(--ink-muted)] mt-2">
+                سيتم حذف{" "}
+                <span className="font-bold text-[color:var(--ink)]">
+                  {target?.label || target?.name || "هذا العنوان"}
+                </span>
+                {" "}من هذا الجهاز. لا يمكن التراجع.
+              </p>
+              <div className="flex gap-2 mt-5 justify-start">
+                <button
+                  onClick={() => removeSaved(confirmDeleteId)}
+                  className="px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)]"
+                >
+                  نعم، احذف
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="px-4 py-2 rounded-full text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]"
+                >
+                  تراجع
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </main>
   );
 }
