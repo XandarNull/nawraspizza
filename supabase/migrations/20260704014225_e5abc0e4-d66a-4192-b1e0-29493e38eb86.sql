@@ -1,4 +1,5 @@
 -- Ensure tracking_token exists, is defaulted, unique, and non-null
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS tracking_token text;
 ALTER TABLE public.orders ALTER COLUMN tracking_token SET DEFAULT gen_random_uuid()::text;
 UPDATE public.orders SET tracking_token = gen_random_uuid()::text WHERE tracking_token IS NULL;
 ALTER TABLE public.orders ALTER COLUMN tracking_token SET NOT NULL;
