@@ -302,8 +302,10 @@ function MenuStep(props: {
       <section aria-labelledby="drinks" className="mb-12">
         <h2 id="drinks" className="font-serif text-2xl mb-4">المشروبات</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          {DRINKS.map((d) => (
-            <div key={d.id} className={"bg-white border border-[color:var(--line)] rounded-xl px-4 py-3 flex items-center justify-between " + (!isOpen ? "opacity-50" : "")}>
+          {DRINKS.map((d) => {
+            const disabled = !isOpen || unavailableSet.has(d.id);
+            return (
+            <div key={d.id} className={"bg-white border border-[color:var(--line)] rounded-xl px-4 py-3 flex items-center justify-between " + (disabled ? "opacity-50" : "")}>
               <div className="flex items-center gap-3">
                 {d.image ? (
                   <img src={d.image} alt={d.name} className="w-12 h-12 object-contain" loading="lazy" />
@@ -312,18 +314,22 @@ function MenuStep(props: {
                 )}
                 <div>
                   <div className="font-medium">{d.name}</div>
-                  <div className="text-sm text-[color:var(--ink-muted)]">{formatPrice(d.price)}</div>
+                  <div className="text-sm text-[color:var(--ink-muted)]">
+                    {unavailableSet.has(d.id) ? <span className="text-[color:var(--tomato)] font-bold">غير متوفر · </span> : null}
+                    {formatPrice(d.price)}
+                  </div>
                 </div>
               </div>
               <button
                 onClick={() => addDrink(d.id)}
-                disabled={!isOpen}
+                disabled={disabled}
                 className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-[color:var(--ink)] text-sm font-bold hover:bg-[color:var(--ink)] hover:text-[color:var(--cream)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Plus className="w-4 h-4" /> أضف
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
