@@ -12,6 +12,12 @@ import pizzaVeggieAsset from "@/assets/pizza-veggie.jpg.asset.json";
 import pizzaMargheritaAsset from "@/assets/pizza-margherita.jpg.asset.json";
 import pizzaHoneyAsset from "@/assets/pizza-honey.jpg.asset.json";
 import pizzaPistachioAsset from "@/assets/pizza-pistachio.jpg.asset.json";
+import drinkPepsiAsset from "@/assets/drink-pepsi.jpg.asset.json";
+import drinkMirandaAsset from "@/assets/drink-miranda.jpg.asset.json";
+import drinkSevenAsset from "@/assets/drink-seven.jpg.asset.json";
+import drinkDewAsset from "@/assets/drink-dew.jpg.asset.json";
+import drinkPepsiFamilyAsset from "@/assets/drink-pepsi-family.jpg.asset.json";
+import drinkWaterAsset from "@/assets/drink-water.jpg.asset.json";
 import { assetUrl } from "@/lib/asset-url";
 
 const pizzaMixed = assetUrl(pizzaMixedAsset);
