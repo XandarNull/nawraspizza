@@ -301,55 +301,62 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
 
   const counts = {
     new: orders?.filter((o) => o.status === "new").length ?? 0,
-    preparing: orders?.filter((o) => o.status === "preparing").length ?? 0,
-    out: orders?.filter((o) => o.status === "out").length ?? 0,
+    out: orders?.filter((o) => o.status === "out" || o.status === "preparing").length ?? 0,
   };
 
   return (
     <div className="min-h-screen bg-[color:var(--cream)] text-[color:var(--ink)]">
       <Toaster richColors position="top-right" />
-      <header className="border-b border-[color:var(--line)] bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div>
-            <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)]">
-              المطبخ
+      <header
+        className="border-b border-[color:var(--line)] bg-white"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 grid gap-4 md:grid-cols-[auto_1fr] items-start">
+          {/* Top-left: restaurant status + control buttons */}
+          <RestaurantControls />
+
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex items-center justify-end gap-4 text-sm w-full">
+              <div>
+                <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)] text-right">
+                  المطبخ
+                </div>
+                <h1 className="font-serif text-2xl text-right">الطلبات الحيّة</h1>
+              </div>
+              <div className="flex items-center gap-4 mr-auto">
+                <Stat label="جديد" value={counts.new} tone="tomato" />
+                <Stat label="في الطريق" value={counts.out} />
+                <button
+                  onClick={onLogout}
+                  className="text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] px-2 py-1 rounded-full border border-[color:var(--line)]"
+                >
+                  خروج
+                </button>
+              </div>
             </div>
-            <h1 className="font-serif text-2xl">الطلبات الحيّة</h1>
+            <div className="flex gap-1 overflow-x-auto w-full justify-end">
+              {[
+                { k: "active", l: "النشطة" },
+                { k: "new", l: "جديد" },
+                { k: "out", l: "في الطريق" },
+                { k: "done", l: "تم التسليم" },
+                { k: "cancelled", l: "ملغى" },
+              ].map((t) => (
+                <button
+                  key={t.k}
+                  onClick={() => setFilter(t.k)}
+                  className={
+                    "px-3 py-1.5 rounded-full text-sm whitespace-nowrap " +
+                    (filter === t.k
+                      ? "bg-[color:var(--ink)] text-[color:var(--cream)]"
+                      : "text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]")
+                  }
+                >
+                  {t.l}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-4 text-sm">
-            <Stat label="جديد" value={counts.new} tone="tomato" />
-            <Stat label="في الفرن" value={counts.preparing} />
-            <Stat label="في الطريق" value={counts.out} />
-            <button
-              onClick={onLogout}
-              className="text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] px-2 py-1 rounded-full border border-[color:var(--line)]"
-            >
-              خروج
-            </button>
-          </div>
-        </div>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-3 flex gap-1 overflow-x-auto">
-          {[
-            { k: "active", l: "النشطة" },
-            { k: "new", l: "جديد" },
-            { k: "preparing", l: "في الفرن" },
-            { k: "out", l: "في الطريق" },
-            { k: "done", l: "تم التسليم" },
-            { k: "cancelled", l: "ملغى" },
-          ].map((t) => (
-            <button
-              key={t.k}
-              onClick={() => setFilter(t.k)}
-              className={
-                "px-3 py-1.5 rounded-full text-sm whitespace-nowrap " +
-                (filter === t.k
-                  ? "bg-[color:var(--ink)] text-[color:var(--cream)]"
-                  : "text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]")
-              }
-            >
-              {t.l}
-            </button>
-          ))}
         </div>
       </header>
 
