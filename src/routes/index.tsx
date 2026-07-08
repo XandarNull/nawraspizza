@@ -17,10 +17,11 @@ import {
   cartTotal,
   formatPrice,
 } from "@/lib/menu";
-import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone, Lock, ClipboardList } from "lucide-react";
+import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone, Lock, ClipboardList, BookmarkPlus, Bookmark, X } from "lucide-react";
 import nawrasLogo from "@/assets/nawras-logo.jpg.asset.json";
 import { assetUrl } from "@/lib/asset-url";
 import { saveMyOrder } from "@/lib/my-orders";
+import { loadAddresses, saveAddress, deleteAddress, type SavedAddress } from "@/lib/my-addresses";
 
 
 
