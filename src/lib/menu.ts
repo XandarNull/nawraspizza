@@ -72,10 +72,10 @@ export const PIZZAS: Pizza[] = [
   { id: "shawarma-meat",    name: "شاورما لحم",         description: "صلصة خاصة, شاورما لحم, جبن موزريلا, فلفل, طماطم, زيتون",                    prices: { ...STANDARD }, image: pizzaShawarmaMeat },
   { id: "shawarma-chicken", name: "شاورما دجاج",        description: "صلصة خاصة, شاورما دجاج, جبن موزريلا, فلفل, طماطم, زيتون",                   prices: { ...STANDARD }, image: pizzaShawarmaChicken },
   { id: "kebab",            name: "كباب لحم",           description: "صلصة خاصة, جبن موزريلا, كباب لحم عراقي, فلفل, طماطم, زيتون",                prices: { ...STANDARD }, image: pizzaKebab },
-  { id: "smoked-beef",      name: "لحم مدخن",           description: "صلصة خاصة, جبن موزريلا, شرائح لحم مدخن",                                    prices: { ...STANDARD }, image: pizzaSmokedBeef },
+  { id: "smoked-beef",      name: "شرائح لحم مدخن",     description: "صلصة خاصة, جبن موزريلا, شرائح لحم مدخن",                                    prices: { ...STANDARD }, image: pizzaSmokedBeef },
   { id: "pepperoni",        name: "ببروني",             description: "صلصة خاصة, جبن موزريلا, شرائح ببروني",                                      prices: { ...STANDARD }, image: pizzaPepperoni },
   { id: "salami",           name: "سلامي",              description: "صلصة خاصة, جبن موزريلا, شرائح سلامي",                                       prices: { ...STANDARD }, image: pizzaSalami },
-  { id: "turkey",           name: "حبش",                description: "صلصة خاصة, جبن موزريلا, حبش",                                               prices: { ...STANDARD }, image: pizzaTurkey },
+  { id: "turkey",           name: "حبش ديك رومي",       description: "صلصة خاصة, جبن موزريلا, حبش",                                               prices: { ...STANDARD }, image: pizzaTurkey },
   { id: "sauce",            name: "صوصج",               description: "صلصة خاصة, جبن موزريلا, صوصج",                                              prices: { ...STANDARD }, image: pizzaSauce },
   { id: "mushroom",         name: "فطر",                description: "صلصة خاصة, جبن موزريلا, فلفل, طماطم, زيتون, فطر",                           prices: { ...STANDARD }, image: pizzaMushroom },
   { id: "veggie",           name: "خضراوات",            description: "صلصة خاصة, جبن موزريلا, فلفل, طماطم, زيتون",                                prices: { ...BASIC },    image: pizzaVeggie },
@@ -89,15 +89,16 @@ export type Drink = {
   name: string;
   price: number;
   emoji: string;
+  image?: string;
 };
 
 export const DRINKS: Drink[] = [
-  { id: "pepsi",   name: "بيبسي ٣٣٠ مل",          price: 500,  emoji: "🥤" },
-  { id: "miranda", name: "ميراندا برتقال ٣٣٠ مل", price: 500,  emoji: "🍊" },
-  { id: "seven",   name: "سفن أب ٣٣٠ مل",         price: 500,  emoji: "🥤" },
-  { id: "dew",     name: "ديو ٣٣٠ مل",            price: 500,  emoji: "🥤" },
-  { id: "pepsi-family", name: "بطل بيبسي عائلي",  price: 1000, emoji: "🥤" },
-  { id: "water",   name: "ماء ٥٠٠ مل",            price: 250,  emoji: "💧" },
+  { id: "pepsi",   name: "بيبسي ٣٣٠ مل",          price: 500,  emoji: "🥤", image: drinkPepsiAsset.url },
+  { id: "miranda", name: "ميراندا برتقال ٣٣٠ مل", price: 500,  emoji: "🍊", image: drinkMirandaAsset.url },
+  { id: "seven",   name: "سفن أب ٣٣٠ مل",         price: 500,  emoji: "🥤", image: drinkSevenAsset.url },
+  { id: "dew",     name: "ديو ٣٣٠ مل",            price: 500,  emoji: "🥤", image: drinkDewAsset.url },
+  { id: "pepsi-family", name: "بطل بيبسي عائلي",  price: 1000, emoji: "🥤", image: drinkPepsiFamilyAsset.url },
+  { id: "water",   name: "ماء ٥٠٠ مل",            price: 250,  emoji: "💧", image: drinkWaterAsset.url },
 ];
 
 export type CartPizza = {
