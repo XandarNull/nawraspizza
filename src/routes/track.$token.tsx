@@ -109,7 +109,8 @@ function TrackPage() {
   }
 
   const cancelled = order.status === "cancelled";
-  const currentIdx = STEPS.findIndex((s) => s.key === order.status);
+  const pendingConfirmation = order.status === "new";
+  const currentIdx = statusStageIdx(order.status);
   const items = Array.isArray(order.items) ? order.items : [];
 
   return (
