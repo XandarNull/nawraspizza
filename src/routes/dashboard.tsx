@@ -311,27 +311,29 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
         className="border-b border-[color:var(--line)] bg-white"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 grid gap-4 md:grid-cols-[1fr_auto] items-start">
-          <div className="flex flex-col items-end gap-3 order-2 md:order-1">
-            <div className="flex items-center justify-end gap-4 text-sm w-full">
-              <div className="flex items-center gap-4 mr-auto">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row-reverse md:items-start gap-4">
+          {/* Right side (RTL): title, stats, filters */}
+          <div className="flex-1 min-w-0 flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="text-right">
+                <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)]">
+                  المطبخ
+                </div>
+                <h1 className="font-serif text-2xl leading-tight">الطلبات الحيّة</h1>
+              </div>
+              <div className="flex items-center gap-4">
+                <Stat label="جديد" value={counts.new} tone="tomato" />
+                <div className="h-8 w-px bg-[color:var(--line)]" />
+                <Stat label="في الطريق" value={counts.out} />
                 <button
                   onClick={onLogout}
-                  className="text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] px-2 py-1 rounded-full border border-[color:var(--line)]"
+                  className="text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] px-3 py-1.5 rounded-full border border-[color:var(--line)]"
                 >
                   خروج
                 </button>
-                <Stat label="في الطريق" value={counts.out} />
-                <Stat label="جديد" value={counts.new} tone="tomato" />
-              </div>
-              <div>
-                <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)] text-right">
-                  المطبخ
-                </div>
-                <h1 className="font-serif text-2xl text-right">الطلبات الحيّة</h1>
               </div>
             </div>
-            <div className="flex gap-1 overflow-x-auto w-full justify-end">
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
               {[
                 { k: "active", l: "النشطة" },
                 { k: "new", l: "جديد" },
@@ -343,10 +345,10 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
                   key={t.k}
                   onClick={() => setFilter(t.k)}
                   className={
-                    "px-3 py-1.5 rounded-full text-sm whitespace-nowrap " +
+                    "px-3.5 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors " +
                     (filter === t.k
                       ? "bg-[color:var(--ink)] text-[color:var(--cream)]"
-                      : "text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]")
+                      : "bg-[color:var(--cream)] text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]")
                   }
                 >
                   {t.l}
@@ -354,8 +356,8 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
               ))}
             </div>
           </div>
-          {/* Top-left in RTL: restaurant status + control buttons */}
-          <div className="order-1 md:order-2">
+          {/* Left side (RTL): restaurant controls */}
+          <div className="md:w-64 shrink-0">
             <RestaurantControls />
           </div>
         </div>
