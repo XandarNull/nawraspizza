@@ -217,6 +217,9 @@ export const createOrder = createServerFn({ method: "POST" })
       if (it?.kind === "pizza" && typeof it.pizzaId === "string" && unavailable.has(it.pizzaId)) {
         throw new Error("أحد الأصناف غير متوفر حالياً — يرجى تحديث الطلب");
       }
+      if (it?.kind === "drink" && typeof it.drinkId === "string" && unavailable.has(it.drinkId)) {
+        throw new Error("أحد الأصناف غير متوفر حالياً — يرجى تحديث الطلب");
+      }
     }
     const { data: row, error } = await supabaseAdmin
       .from("orders")

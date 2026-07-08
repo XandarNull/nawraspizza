@@ -16,7 +16,7 @@ import {
   Share2,
   Lock,
 } from "lucide-react";
-import { PIZZAS, formatPrice } from "@/lib/menu";
+import { PIZZAS, DRINKS, formatPrice } from "@/lib/menu";
 import {
   dashboardLogin,
   dashboardLogout,
@@ -847,24 +847,51 @@ function RestaurantControls() {
           <p className="text-xs text-[color:var(--ink-muted)] mt-1">
             اضغط على الصنف لتفعيل/إلغاء التوفر. يُخفَّى الصنف من الموقع فوراً.
           </p>
-          <div className="mt-4 grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto pr-1">
-            {PIZZAS.map((p) => {
-              const off = unavailable.includes(p.id);
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => togglePizza(p.id)}
-                  className={
-                    "px-3 py-2 rounded-xl text-sm border text-right transition-colors " +
-                    (off
-                      ? "bg-[color:var(--tomato)] text-white border-[color:var(--tomato)]"
-                      : "bg-white border-[color:var(--line)] hover:border-[color:var(--tomato)]")
-                  }
-                >
-                  {off ? "🚫 " : "✓ "} {p.name}
-                </button>
-              );
-            })}
+          <div className="mt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
+            <div>
+              <h4 className="text-xs font-bold text-[color:var(--ink-muted)] mb-2">البيتزا</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {PIZZAS.map((p) => {
+                  const off = unavailable.includes(p.id);
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => togglePizza(p.id)}
+                      className={
+                        "px-3 py-2 rounded-xl text-sm border text-right transition-colors " +
+                        (off
+                          ? "bg-[color:var(--tomato)] text-white border-[color:var(--tomato)]"
+                          : "bg-white border-[color:var(--line)] hover:border-[color:var(--tomato)]")
+                      }
+                    >
+                      {off ? "🚫 " : "✓ "} {p.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-[color:var(--ink-muted)] mb-2">المشروبات</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {DRINKS.map((d) => {
+                  const off = unavailable.includes(d.id);
+                  return (
+                    <button
+                      key={d.id}
+                      onClick={() => togglePizza(d.id)}
+                      className={
+                        "px-3 py-2 rounded-xl text-sm border text-right transition-colors " +
+                        (off
+                          ? "bg-[color:var(--tomato)] text-white border-[color:var(--tomato)]"
+                          : "bg-white border-[color:var(--line)] hover:border-[color:var(--tomato)]")
+                      }
+                    >
+                      {off ? "🚫 " : "✓ "} {d.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
           <div className="mt-5 flex justify-end">
             <button
