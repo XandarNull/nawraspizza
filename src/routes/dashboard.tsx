@@ -44,18 +44,18 @@ export const Route = createFileRoute("/dashboard")({
 type Order = OrderDTO;
 
 const STATUS_FLOW: { key: string; label: string; icon: typeof ChefHat; next?: string }[] = [
-  { key: "new", label: "جديد", icon: Clock, next: "preparing" },
-  { key: "preparing", label: "في الفرن", icon: ChefHat, next: "out" },
+  { key: "new", label: "جديد", icon: Clock, next: "out" },
   { key: "out", label: "في الطريق", icon: Bike, next: "done" },
   { key: "done", label: "تم التسليم", icon: CheckCheck },
 ];
 
 const STATUS_LABEL: Record<string, string> = {
   new: "جديد",
-  preparing: "في الفرن",
   out: "في الطريق",
   done: "تم التسليم",
   cancelled: "ملغى",
+  // Legacy support (older orders may still have this status)
+  preparing: "في الطريق",
 };
 
 function DashboardGate() {
@@ -301,55 +301,63 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
 
   const counts = {
     new: orders?.filter((o) => o.status === "new").length ?? 0,
-    preparing: orders?.filter((o) => o.status === "preparing").length ?? 0,
-    out: orders?.filter((o) => o.status === "out").length ?? 0,
+    out: orders?.filter((o) => o.status === "out" || o.status === "preparing").length ?? 0,
   };
 
   return (
     <div className="min-h-screen bg-[color:var(--cream)] text-[color:var(--ink)]">
       <Toaster richColors position="top-right" />
-      <header className="border-b border-[color:var(--line)] bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div>
-            <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)]">
-              المطبخ
+      <header
+        className="border-b border-[color:var(--line)] bg-white"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 grid gap-4 md:grid-cols-[1fr_auto] items-start">
+          <div className="flex flex-col items-end gap-3 order-2 md:order-1">
+            <div className="flex items-center justify-end gap-4 text-sm w-full">
+              <div className="flex items-center gap-4 mr-auto">
+                <button
+                  onClick={onLogout}
+                  className="text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] px-2 py-1 rounded-full border border-[color:var(--line)]"
+                >
+                  خروج
+                </button>
+                <Stat label="في الطريق" value={counts.out} />
+                <Stat label="جديد" value={counts.new} tone="tomato" />
+              </div>
+              <div>
+                <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)] text-right">
+                  المطبخ
+                </div>
+                <h1 className="font-serif text-2xl text-right">الطلبات الحيّة</h1>
+              </div>
             </div>
-            <h1 className="font-serif text-2xl">الطلبات الحيّة</h1>
+            <div className="flex gap-1 overflow-x-auto w-full justify-end">
+              {[
+                { k: "active", l: "النشطة" },
+                { k: "new", l: "جديد" },
+                { k: "out", l: "في الطريق" },
+                { k: "done", l: "تم التسليم" },
+                { k: "cancelled", l: "ملغى" },
+              ].map((t) => (
+                <button
+                  key={t.k}
+                  onClick={() => setFilter(t.k)}
+                  className={
+                    "px-3 py-1.5 rounded-full text-sm whitespace-nowrap " +
+                    (filter === t.k
+                      ? "bg-[color:var(--ink)] text-[color:var(--cream)]"
+                      : "text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]")
+                  }
+                >
+                  {t.l}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-4 text-sm">
-            <Stat label="جديد" value={counts.new} tone="tomato" />
-            <Stat label="في الفرن" value={counts.preparing} />
-            <Stat label="في الطريق" value={counts.out} />
-            <button
-              onClick={onLogout}
-              className="text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] px-2 py-1 rounded-full border border-[color:var(--line)]"
-            >
-              خروج
-            </button>
+          {/* Top-left in RTL: restaurant status + control buttons */}
+          <div className="order-1 md:order-2">
+            <RestaurantControls />
           </div>
-        </div>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-3 flex gap-1 overflow-x-auto">
-          {[
-            { k: "active", l: "النشطة" },
-            { k: "new", l: "جديد" },
-            { k: "preparing", l: "في الفرن" },
-            { k: "out", l: "في الطريق" },
-            { k: "done", l: "تم التسليم" },
-            { k: "cancelled", l: "ملغى" },
-          ].map((t) => (
-            <button
-              key={t.k}
-              onClick={() => setFilter(t.k)}
-              className={
-                "px-3 py-1.5 rounded-full text-sm whitespace-nowrap " +
-                (filter === t.k
-                  ? "bg-[color:var(--ink)] text-[color:var(--cream)]"
-                  : "text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]")
-              }
-            >
-              {t.l}
-            </button>
-          ))}
         </div>
       </header>
 
@@ -360,7 +368,6 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
       )}
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <RestaurantControls />
         {orders === null && <p className="text-[color:var(--ink-muted)]">جارِ التحميل…</p>}
         {orders !== null && filtered.length === 0 && (
           <div className="text-center py-16 text-[color:var(--ink-muted)]">
@@ -664,7 +671,7 @@ function OrderCard({
                   <X className="w-4 h-4" /> رفض
                 </button>
                 <button
-                  onClick={() => onStatus(order.id, "preparing")}
+                  onClick={() => onStatus(order.id, "out")}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
                 >
                   <Check className="w-4 h-4" /> قبول الطلب
@@ -701,7 +708,7 @@ function OrderCard({
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, { bg: string; label: string }> = {
     new: { bg: "bg-[color:var(--tomato)] text-white", label: "جديد" },
-    preparing: { bg: "bg-amber-500 text-white", label: "في الفرن" },
+    preparing: { bg: "bg-sky-600 text-white", label: "في الطريق" },
     out: { bg: "bg-sky-600 text-white", label: "في الطريق" },
     done: { bg: "bg-emerald-600 text-white", label: "تم التسليم" },
     cancelled: { bg: "bg-neutral-400 text-white", label: "ملغى" },
@@ -779,72 +786,93 @@ function RestaurantControls() {
   };
 
   return (
-    <section className="mb-6 bg-white border border-[color:var(--line)] rounded-2xl p-4 sm:p-5">
-      <div className="flex flex-wrap items-center gap-3 justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className={
-              "w-3 h-3 rounded-full " +
-              (isOpen ? "bg-emerald-500" : isOpen === false ? "bg-[color:var(--tomato)]" : "bg-neutral-300")
-            }
-          />
-          <div>
-            <div className="font-serif text-lg">
-              حالة المطعم: {isOpen === null ? "…" : isOpen ? "مفتوح" : "مغلق"}
-            </div>
-            <div className="text-xs text-[color:var(--ink-muted)]">
-              عند الإغلاق تُعطَّل الطلبات من الموقع.
-            </div>
+    <section className="bg-[color:var(--cream)] border border-[color:var(--line)] rounded-2xl p-3 w-full md:w-64 shrink-0">
+      <div className="flex items-center gap-2">
+        <div
+          className={
+            "w-2.5 h-2.5 rounded-full shrink-0 " +
+            (isOpen ? "bg-emerald-500" : isOpen === false ? "bg-[color:var(--tomato)]" : "bg-neutral-300")
+          }
+        />
+        <div className="min-w-0">
+          <div className="font-bold text-sm leading-tight">
+            حالة المطعم:{" "}
+            <span className={isOpen ? "text-emerald-700" : "text-[color:var(--tomato)]"}>
+              {isOpen === null ? "…" : isOpen ? "مفتوح" : "مغلق"}
+            </span>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={toggleOpen}
-            disabled={saving || isOpen === null}
-            className={
-              "px-4 py-2 rounded-full text-sm font-bold transition-colors disabled:opacity-60 " +
-              (isOpen
-                ? "bg-[color:var(--tomato)] text-white hover:bg-[color:var(--tomato-dark)]"
-                : "bg-emerald-600 text-white hover:bg-emerald-700")
-            }
-          >
-            {isOpen ? "إغلاق المطعم" : "فتح المطعم"}
-          </button>
-          <button
-            onClick={() => setShowPizzas((v) => !v)}
-            className="px-4 py-2 rounded-full text-sm font-bold border border-[color:var(--line)] hover:border-[color:var(--tomato)]"
-          >
-            {showPizzas ? "إخفاء" : "تحديد"} الأصناف غير المتوفرة ({unavailable.length})
-          </button>
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="px-4 py-2 rounded-full text-sm font-bold border border-[color:var(--tomato)] text-[color:var(--tomato)] hover:bg-[color:var(--tomato)] hover:text-white"
-          >
-            حذف كل الطلبات (بداية يوم جديد)
-          </button>
+          <div className="text-[10px] text-[color:var(--ink-muted)] mt-0.5">
+            عند الإغلاق تُعطَّل الطلبات من الموقع
+          </div>
         </div>
       </div>
 
+      <div className="mt-3 grid gap-2">
+        <button
+          onClick={toggleOpen}
+          disabled={saving || isOpen === null}
+          className={
+            "w-full px-3 py-2 rounded-full text-xs font-bold transition-colors disabled:opacity-60 " +
+            (isOpen
+              ? "bg-[color:var(--tomato)] text-white hover:bg-[color:var(--tomato-dark)]"
+              : "bg-emerald-600 text-white hover:bg-emerald-700")
+          }
+        >
+          {isOpen ? "إغلاق المطعم" : "فتح المطعم"}
+        </button>
+        <button
+          onClick={() => setShowPizzas(true)}
+          className="w-full px-3 py-2 rounded-full text-xs font-bold border border-[color:var(--line)] bg-white hover:border-[color:var(--tomato)]"
+        >
+          الأصناف غير المتوفرة ({unavailable.length})
+        </button>
+        <button
+          onClick={() => setConfirmDelete(true)}
+          className="w-full px-3 py-2 rounded-full text-xs font-bold border border-[color:var(--tomato)] text-[color:var(--tomato)] bg-white hover:bg-[color:var(--tomato)] hover:text-white"
+        >
+          حذف كل الطلبات (يوم جديد)
+        </button>
+      </div>
+
       {showPizzas && (
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-          {PIZZAS.map((p) => {
-            const off = unavailable.includes(p.id);
-            return (
-              <button
-                key={p.id}
-                onClick={() => togglePizza(p.id)}
-                className={
-                  "px-3 py-2 rounded-xl text-sm border text-right transition-colors " +
-                  (off
-                    ? "bg-[color:var(--tomato)] text-white border-[color:var(--tomato)]"
-                    : "bg-white border-[color:var(--line)] hover:border-[color:var(--tomato)]")
-                }
-              >
-                {off ? "🚫 " : "✓ "} {p.name}
-              </button>
-            );
-          })}
-        </div>
+        <Modal onClose={() => setShowPizzas(false)}>
+          <div className="flex items-center justify-between">
+            <h3 className="font-serif text-xl">الأصناف غير المتوفرة</h3>
+            <span className="text-xs text-[color:var(--ink-muted)]">
+              {unavailable.length} محدد
+            </span>
+          </div>
+          <p className="text-xs text-[color:var(--ink-muted)] mt-1">
+            اضغط على الصنف لتفعيل/إلغاء التوفر. يُخفَّى الصنف من الموقع فوراً.
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto pr-1">
+            {PIZZAS.map((p) => {
+              const off = unavailable.includes(p.id);
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => togglePizza(p.id)}
+                  className={
+                    "px-3 py-2 rounded-xl text-sm border text-right transition-colors " +
+                    (off
+                      ? "bg-[color:var(--tomato)] text-white border-[color:var(--tomato)]"
+                      : "bg-white border-[color:var(--line)] hover:border-[color:var(--tomato)]")
+                  }
+                >
+                  {off ? "🚫 " : "✓ "} {p.name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-5 flex justify-end">
+            <button
+              onClick={() => setShowPizzas(false)}
+              className="px-4 py-2 rounded-full bg-[color:var(--ink)] text-[color:var(--cream)] text-sm font-bold"
+            >
+              تم
+            </button>
+          </div>
+        </Modal>
       )}
 
       {confirmDelete && (
@@ -875,3 +903,4 @@ function RestaurantControls() {
     </section>
   );
 }
+

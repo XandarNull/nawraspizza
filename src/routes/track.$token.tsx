@@ -21,11 +21,18 @@ export const Route = createFileRoute("/track/$token")({
 type TrackedOrder = Awaited<ReturnType<typeof getOrderByToken>>;
 
 const STEPS = [
-  { key: "new", label: "استلمنا طلبك", icon: Clock },
-  { key: "preparing", label: "في الفرن", icon: ChefHat },
+  { key: "confirmed", label: "تم تأكيد الطلب", icon: ChefHat },
   { key: "out", label: "في الطريق إليك", icon: Bike },
   { key: "done", label: "تم التسليم", icon: CheckCheck },
 ] as const;
+
+// Map order.status -> highest completed step index in STEPS
+function statusStageIdx(status: string | undefined): number {
+  if (status === "done") return 2;
+  if (status === "out" || status === "preparing") return 1;
+  // "new" or unknown → nothing confirmed yet
+  return -1;
+}
 
 function TrackPage() {
   const { token } = Route.useParams();
@@ -102,7 +109,8 @@ function TrackPage() {
   }
 
   const cancelled = order.status === "cancelled";
-  const currentIdx = STEPS.findIndex((s) => s.key === order.status);
+  const pendingConfirmation = order.status === "new";
+  const currentIdx = statusStageIdx(order.status);
   const items = Array.isArray(order.items) ? order.items : [];
 
   return (
@@ -140,41 +148,52 @@ function TrackPage() {
             </p>
           </div>
         ) : (
-          <ol className="bg-white rounded-2xl border border-[color:var(--line)] p-5">
-            {STEPS.map((s, i) => {
-              const done = i <= currentIdx;
-              const active = i === currentIdx;
-              const Icon = s.icon;
-              return (
-                <li key={s.key} className="flex items-start gap-3 py-3">
-                  <div
-                    className={
-                      "w-10 h-10 rounded-full grid place-items-center shrink-0 " +
-                      (done
-                        ? "bg-[color:var(--tomato)] text-white"
-                        : "bg-[color:var(--cream)] text-[color:var(--ink-muted)]")
-                    }
-                  >
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 pt-1.5">
+          <>
+            {pendingConfirmation && (
+              <div className="bg-white rounded-2xl border-2 border-dashed border-[color:var(--tomato)] p-5 mb-4 text-center">
+                <Clock className="w-10 h-10 text-[color:var(--tomato)] mx-auto animate-pulse" />
+                <h2 className="font-serif text-xl mt-3">بانتظار تأكيد المطعم</h2>
+                <p className="text-sm text-[color:var(--ink-muted)] mt-2">
+                  استلمنا طلبك ونحن نراجعه الآن — ستُحدَّث الحالة تلقائياً بمجرد التأكيد.
+                </p>
+              </div>
+            )}
+            <ol className="bg-white rounded-2xl border border-[color:var(--line)] p-5">
+              {STEPS.map((s, i) => {
+                const done = i <= currentIdx;
+                const active = i === currentIdx + 1 && !pendingConfirmation;
+                const Icon = s.icon;
+                return (
+                  <li key={s.key} className="flex items-start gap-3 py-3">
                     <div
                       className={
-                        "font-bold " + (active ? "text-[color:var(--tomato)]" : "")
+                        "w-10 h-10 rounded-full grid place-items-center shrink-0 " +
+                        (done
+                          ? "bg-[color:var(--tomato)] text-white"
+                          : "bg-[color:var(--cream)] text-[color:var(--ink-muted)]")
                       }
                     >
-                      {s.label}
-                      {active && (
-                        <span className="mr-2 text-xs font-normal text-[color:var(--ink-muted)]">
-                          — الحالة الحالية
-                        </span>
-                      )}
+                      <Icon className="w-5 h-5" />
                     </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
+                    <div className="flex-1 pt-1.5">
+                      <div
+                        className={
+                          "font-bold " + (active || (done && i === currentIdx) ? "text-[color:var(--tomato)]" : "")
+                        }
+                      >
+                        {s.label}
+                        {done && i === currentIdx && (
+                          <span className="mr-2 text-xs font-normal text-[color:var(--ink-muted)]">
+                            — الحالة الحالية
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </>
         )}
 
         <section className="bg-white rounded-2xl border border-[color:var(--line)] p-5 mt-4">

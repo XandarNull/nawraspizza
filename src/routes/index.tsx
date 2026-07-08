@@ -17,10 +17,11 @@ import {
   cartTotal,
   formatPrice,
 } from "@/lib/menu";
-import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone, Lock, ClipboardList } from "lucide-react";
+import { MapPin, Plus, Minus, Trash2, ShoppingBag, LocateFixed, Phone, Lock, ClipboardList, BookmarkPlus, Bookmark, X } from "lucide-react";
 import nawrasLogo from "@/assets/nawras-logo.jpg.asset.json";
 import { assetUrl } from "@/lib/asset-url";
 import { saveMyOrder } from "@/lib/my-orders";
+import { loadAddresses, saveAddress, deleteAddress, type SavedAddress } from "@/lib/my-addresses";
 
 
 
@@ -161,24 +162,27 @@ function OrderPage() {
 
 function Header() {
   return (
-    <header className="border-b border-[color:var(--line)] bg-[color:var(--cream)]/90 backdrop-blur sticky top-0 z-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <header
+      className="border-b border-[color:var(--line)] bg-[color:var(--cream)]/95 backdrop-blur sticky top-0 z-20"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 py-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <img
             src={assetUrl(nawrasLogo)}
             alt="شعار مطعم بيتزا نورس"
-            width={48}
-            height={48}
-            className="w-12 h-12 rounded-full object-cover ring-2 ring-[color:var(--tomato)]/50 shadow-sm"
+            width={44}
+            height={44}
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-[color:var(--tomato)]/50 shadow-sm shrink-0"
           />
-          <div>
-            <div className="font-serif text-xl leading-none">مطعم بيتزا نورس</div>
-            <div className="text-[11px] uppercase tracking-widest text-[color:var(--tomato)] mt-1">Nawras Pizza</div>
+          <div className="min-w-0">
+            <div className="font-serif text-base sm:text-xl leading-tight truncate">مطعم بيتزا نورس</div>
+            <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-[color:var(--tomato)] mt-0.5">Nawras Pizza</div>
           </div>
         </div>
         <Link
           to="/my-orders"
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-[color:var(--line)] text-sm font-bold text-[color:var(--ink)] hover:bg-[color:var(--tomato)] hover:text-white hover:border-transparent transition-colors"
+          className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-full bg-white border border-[color:var(--line)] text-xs sm:text-sm font-bold text-[color:var(--ink)] hover:bg-[color:var(--tomato)] hover:text-white hover:border-transparent transition-colors shrink-0"
         >
           <ClipboardList className="w-4 h-4" />
           <span>طلباتي</span>
@@ -326,24 +330,30 @@ function MenuStep(props: {
           </h2>
           <ul className="divide-y divide-[color:var(--line)]">
             {cart.map((item, i) => (
-              <li key={i} className="py-3 flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{itemLabel(item)}</div>
-                  <div className="text-sm text-[color:var(--ink-muted)]">{formatPrice(itemUnitPrice(item))} للواحد</div>
+              <li key={i} className="py-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
+                <div className="min-w-0 col-span-2 sm:col-span-1">
+                  <div className="font-medium break-words">{itemLabel(item)}</div>
+                  <div className="text-xs text-[color:var(--ink-muted)] mt-0.5">
+                    {formatPrice(itemUnitPrice(item))} للواحد · الإجمالي{" "}
+                    <span className="font-bold text-[color:var(--ink)]">
+                      {formatPrice(itemUnitPrice(item) * item.qty)}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 border border-[color:var(--line)] rounded-full">
-                  <button onClick={() => changeQty(i, -1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="تقليل">
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <span className="w-6 text-center text-sm font-bold">{item.qty}</span>
-                  <button onClick={() => changeQty(i, 1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="زيادة">
-                    <Plus className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-2 justify-end col-span-2 sm:col-span-1">
+                  <div className="flex items-center gap-1 border border-[color:var(--line)] rounded-full">
+                    <button onClick={() => changeQty(i, -1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="تقليل">
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="w-6 text-center text-sm font-bold">{item.qty}</span>
+                    <button onClick={() => changeQty(i, 1)} className="w-8 h-8 grid place-items-center hover:bg-[color:var(--cream)] rounded-full" aria-label="زيادة">
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <button onClick={() => removeItem(i)} className="text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] p-1" aria-label="حذف">
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="w-24 text-left font-bold">{formatPrice(itemUnitPrice(item) * item.qty)}</div>
-                <button onClick={() => removeItem(i)} className="text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] p-1" aria-label="حذف">
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </li>
             ))}
           </ul>
@@ -397,10 +407,42 @@ function CheckoutStep(props: {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [saved, setSaved] = useState<SavedAddress[]>([]);
+  const [selectedSavedId, setSelectedSavedId] = useState<string | null>(null);
+  const [saveThis, setSaveThis] = useState(true);
+  const [saveLabel, setSaveLabel] = useState("");
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
+    const list = loadAddresses();
+    setSaved(list);
+    // Auto-select most recent address on first arrival
+    if (list.length > 0) {
+      const a = list[0];
+      setSelectedSavedId(a.id);
+      setName(a.name);
+      setPhone(a.phone);
+      setAddress(a.address);
+      if (a.latitude != null && a.longitude != null) {
+        setCoords({ lat: a.latitude, lng: a.longitude });
+      }
+    }
   }, []);
+
+  const pickSaved = (a: SavedAddress) => {
+    setSelectedSavedId(a.id);
+    setName(a.name);
+    setPhone(a.phone);
+    setAddress(a.address);
+    setCoords(a.latitude != null && a.longitude != null ? { lat: a.latitude, lng: a.longitude } : null);
+  };
+
+  const removeSaved = (id: string) => {
+    deleteAddress(id);
+    const next = loadAddresses();
+    setSaved(next);
+    if (selectedSavedId === id) setSelectedSavedId(null);
+  };
 
   const locate = () => {
     if (!("geolocation" in navigator)) {
@@ -442,6 +484,17 @@ function CheckoutStep(props: {
           total,
         },
       });
+      if (saveThis) {
+        saveAddress({
+          id: selectedSavedId ?? undefined,
+          label: saveLabel.trim() || undefined,
+          name: name.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          latitude: coords?.lat ?? null,
+          longitude: coords?.lng ?? null,
+        });
+      }
       saveMyOrder({ id: res.id, token: res.tracking_token });
       navigate({ to: "/track/$token", params: { token: res.tracking_token } });
     } catch (err) {
@@ -458,6 +511,71 @@ function CheckoutStep(props: {
       <p className="text-[color:var(--ink-muted)] mt-2">أدخل عنوانك وشارك موقعك ليصلك السائق بسرعة.</p>
 
       <form onSubmit={submit} className="mt-8 space-y-5">
+        {saved.length > 0 && (
+          <div className="rounded-2xl border border-[color:var(--line)] bg-white p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Bookmark className="w-4 h-4 text-[color:var(--tomato)]" />
+              <div className="font-bold text-sm">عناويني المحفوظة</div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {saved.map((a) => {
+                const active = selectedSavedId === a.id;
+                return (
+                  <div
+                    key={a.id}
+                    className={
+                      "relative rounded-xl border p-3 text-right cursor-pointer transition-colors " +
+                      (active
+                        ? "border-[color:var(--tomato)] bg-[color:var(--cream)]"
+                        : "border-[color:var(--line)] hover:border-[color:var(--tomato)]")
+                    }
+                    onClick={() => pickSaved(a)}
+                  >
+                    <div className="font-bold text-sm truncate pr-6">
+                      {a.label || a.name}
+                    </div>
+                    <div className="text-xs text-[color:var(--ink-muted)] mt-0.5" dir="ltr">
+                      {a.phone}
+                    </div>
+                    <div className="text-xs text-[color:var(--ink-muted)] mt-1 line-clamp-2">
+                      {a.address}
+                    </div>
+                    {a.latitude != null && a.longitude != null && (
+                      <div className="text-[10px] text-[color:var(--tomato)] mt-1 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> موقع GPS محفوظ
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSaved(a.id);
+                      }}
+                      className="absolute top-2 left-2 w-6 h-6 grid place-items-center rounded-full text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] hover:bg-white"
+                      aria-label="حذف العنوان"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedSavedId(null);
+                setName("");
+                setPhone("");
+                setAddress("");
+                setCoords(null);
+              }}
+              className="mt-3 text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)]"
+            >
+              + إدخال عنوان جديد
+            </button>
+          </div>
+        )}
+
         <Field label="الاسم" required>
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required className="input" placeholder="محمد علي" />
         </Field>
@@ -507,6 +625,36 @@ function CheckoutStep(props: {
         <Field label="ملاحظات (اختياري)">
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} className="input min-h-[60px]" placeholder="اضغط الجرس، بدون بصل على البيتزا الثانية…" />
         </Field>
+
+        <div className="rounded-2xl border border-[color:var(--line)] bg-white p-4">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={saveThis}
+              onChange={(e) => setSaveThis(e.target.checked)}
+              className="mt-1 w-4 h-4 accent-[color:var(--tomato)]"
+            />
+            <div className="flex-1">
+              <div className="font-bold text-sm flex items-center gap-1.5">
+                <BookmarkPlus className="w-4 h-4 text-[color:var(--tomato)]" />
+                {selectedSavedId ? "تحديث هذا العنوان" : "حفظ هذا العنوان للطلبات القادمة"}
+              </div>
+              <div className="text-xs text-[color:var(--ink-muted)] mt-0.5">
+                يُحفظ على هذا الجهاز فقط — لتختاره بسرعة في المرة القادمة.
+              </div>
+            </div>
+          </label>
+          {saveThis && !selectedSavedId && (
+            <input
+              value={saveLabel}
+              onChange={(e) => setSaveLabel(e.target.value)}
+              maxLength={40}
+              className="input mt-3"
+              placeholder="اسم مختصر للعنوان (مثلاً: البيت، العمل)"
+            />
+          )}
+        </div>
+
 
         <div className="rounded-2xl bg-[color:var(--ink)] text-[color:var(--cream)] p-5">
           <div className="flex items-baseline justify-between">
