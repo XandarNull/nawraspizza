@@ -162,24 +162,27 @@ function OrderPage() {
 
 function Header() {
   return (
-    <header className="border-b border-[color:var(--line)] bg-[color:var(--cream)]/90 backdrop-blur sticky top-0 z-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <header
+      className="border-b border-[color:var(--line)] bg-[color:var(--cream)]/95 backdrop-blur sticky top-0 z-20"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 py-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <img
             src={assetUrl(nawrasLogo)}
             alt="شعار مطعم بيتزا نورس"
-            width={48}
-            height={48}
-            className="w-12 h-12 rounded-full object-cover ring-2 ring-[color:var(--tomato)]/50 shadow-sm"
+            width={44}
+            height={44}
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-[color:var(--tomato)]/50 shadow-sm shrink-0"
           />
-          <div>
-            <div className="font-serif text-xl leading-none">مطعم بيتزا نورس</div>
-            <div className="text-[11px] uppercase tracking-widest text-[color:var(--tomato)] mt-1">Nawras Pizza</div>
+          <div className="min-w-0">
+            <div className="font-serif text-base sm:text-xl leading-tight truncate">مطعم بيتزا نورس</div>
+            <div className="text-[10px] sm:text-[11px] uppercase tracking-widest text-[color:var(--tomato)] mt-0.5">Nawras Pizza</div>
           </div>
         </div>
         <Link
           to="/my-orders"
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white border border-[color:var(--line)] text-sm font-bold text-[color:var(--ink)] hover:bg-[color:var(--tomato)] hover:text-white hover:border-transparent transition-colors"
+          className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-full bg-white border border-[color:var(--line)] text-xs sm:text-sm font-bold text-[color:var(--ink)] hover:bg-[color:var(--tomato)] hover:text-white hover:border-transparent transition-colors shrink-0"
         >
           <ClipboardList className="w-4 h-4" />
           <span>طلباتي</span>
