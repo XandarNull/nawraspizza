@@ -671,7 +671,7 @@ function OrderCard({
                   <X className="w-4 h-4" /> رفض
                 </button>
                 <button
-                  onClick={() => onStatus(order.id, "preparing")}
+                  onClick={() => onStatus(order.id, "out")}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors"
                 >
                   <Check className="w-4 h-4" /> قبول الطلب
