@@ -669,6 +669,44 @@ function CheckoutStep(props: {
           {submitting ? "جارِ إرسال الطلب…" : "تأكيد الطلب"}
         </button>
       </form>
+
+      {confirmDeleteId && (() => {
+        const target = saved.find((x) => x.id === confirmDeleteId);
+        return (
+          <div
+            onClick={() => setConfirmDeleteId(null)}
+            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl border border-[color:var(--line)] w-full max-w-sm p-6 text-right"
+            >
+              <h3 className="font-serif text-xl">حذف العنوان المحفوظ؟</h3>
+              <p className="text-sm text-[color:var(--ink-muted)] mt-2">
+                سيتم حذف{" "}
+                <span className="font-bold text-[color:var(--ink)]">
+                  {target?.label || target?.name || "هذا العنوان"}
+                </span>
+                {" "}من هذا الجهاز. لا يمكن التراجع.
+              </p>
+              <div className="flex gap-2 mt-5 justify-start">
+                <button
+                  onClick={() => removeSaved(confirmDeleteId)}
+                  className="px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)]"
+                >
+                  نعم، احذف
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="px-4 py-2 rounded-full text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]"
+                >
+                  تراجع
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </main>
   );
 }
