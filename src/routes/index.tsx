@@ -626,6 +626,36 @@ function CheckoutStep(props: {
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} className="input min-h-[60px]" placeholder="اضغط الجرس، بدون بصل على البيتزا الثانية…" />
         </Field>
 
+        <div className="rounded-2xl border border-[color:var(--line)] bg-white p-4">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={saveThis}
+              onChange={(e) => setSaveThis(e.target.checked)}
+              className="mt-1 w-4 h-4 accent-[color:var(--tomato)]"
+            />
+            <div className="flex-1">
+              <div className="font-bold text-sm flex items-center gap-1.5">
+                <BookmarkPlus className="w-4 h-4 text-[color:var(--tomato)]" />
+                {selectedSavedId ? "تحديث هذا العنوان" : "حفظ هذا العنوان للطلبات القادمة"}
+              </div>
+              <div className="text-xs text-[color:var(--ink-muted)] mt-0.5">
+                يُحفظ على هذا الجهاز فقط — لتختاره بسرعة في المرة القادمة.
+              </div>
+            </div>
+          </label>
+          {saveThis && !selectedSavedId && (
+            <input
+              value={saveLabel}
+              onChange={(e) => setSaveLabel(e.target.value)}
+              maxLength={40}
+              className="input mt-3"
+              placeholder="اسم مختصر للعنوان (مثلاً: البيت، العمل)"
+            />
+          )}
+        </div>
+
+
         <div className="rounded-2xl bg-[color:var(--ink)] text-[color:var(--cream)] p-5">
           <div className="flex items-baseline justify-between">
             <span className="tracking-widest text-xs">الإجمالي</span>
