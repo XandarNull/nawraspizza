@@ -484,6 +484,17 @@ function CheckoutStep(props: {
           total,
         },
       });
+      if (saveThis) {
+        saveAddress({
+          id: selectedSavedId ?? undefined,
+          label: saveLabel.trim() || undefined,
+          name: name.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          latitude: coords?.lat ?? null,
+          longitude: coords?.lng ?? null,
+        });
+      }
       saveMyOrder({ id: res.id, token: res.tracking_token });
       navigate({ to: "/track/$token", params: { token: res.tracking_token } });
     } catch (err) {
