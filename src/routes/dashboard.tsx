@@ -16,7 +16,7 @@ import {
   Share2,
   Lock,
 } from "lucide-react";
-import { PIZZAS, formatPrice } from "@/lib/menu";
+import { PIZZAS, DRINKS, formatPrice } from "@/lib/menu";
 import {
   dashboardLogin,
   dashboardLogout,
