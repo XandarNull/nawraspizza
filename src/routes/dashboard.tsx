@@ -311,27 +311,24 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
         className="border-b border-[color:var(--line)] bg-white"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 grid gap-4 md:grid-cols-[auto_1fr] items-start">
-          {/* Top-left: restaurant status + control buttons */}
-          <RestaurantControls />
-
-          <div className="flex flex-col items-end gap-3">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 grid gap-4 md:grid-cols-[1fr_auto] items-start">
+          <div className="flex flex-col items-end gap-3 order-2 md:order-1">
             <div className="flex items-center justify-end gap-4 text-sm w-full">
-              <div>
-                <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)] text-right">
-                  المطبخ
-                </div>
-                <h1 className="font-serif text-2xl text-right">الطلبات الحيّة</h1>
-              </div>
               <div className="flex items-center gap-4 mr-auto">
-                <Stat label="جديد" value={counts.new} tone="tomato" />
-                <Stat label="في الطريق" value={counts.out} />
                 <button
                   onClick={onLogout}
                   className="text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] px-2 py-1 rounded-full border border-[color:var(--line)]"
                 >
                   خروج
                 </button>
+                <Stat label="في الطريق" value={counts.out} />
+                <Stat label="جديد" value={counts.new} tone="tomato" />
+              </div>
+              <div>
+                <div className="text-[11px] tracking-widest text-[color:var(--ink-muted)] text-right">
+                  المطبخ
+                </div>
+                <h1 className="font-serif text-2xl text-right">الطلبات الحيّة</h1>
               </div>
             </div>
             <div className="flex gap-1 overflow-x-auto w-full justify-end">
@@ -356,6 +353,10 @@ function Dashboard({ onLogout }: { onLogout: () => Promise<void> }) {
                 </button>
               ))}
             </div>
+          </div>
+          {/* Top-left in RTL: restaurant status + control buttons */}
+          <div className="order-1 md:order-2">
+            <RestaurantControls />
           </div>
         </div>
       </header>
