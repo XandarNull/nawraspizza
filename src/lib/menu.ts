@@ -99,6 +99,15 @@ const drinkDew = assetUrl(drinkDewAsset);
 const drinkPepsiFamily = assetUrl(drinkPepsiFamilyAsset);
 const drinkWater = assetUrl(drinkWaterAsset);
 
+export const DRINKS: Drink[] = [
+  { id: "pepsi",   name: "بيبسي ٣٣٠ مل",          price: 500,  emoji: "🥤", image: drinkPepsi },
+  { id: "miranda", name: "ميراندا برتقال ٣٣٠ مل", price: 500,  emoji: "🍊", image: drinkMiranda },
+  { id: "seven",   name: "سفن أب ٣٣٠ مل",         price: 500,  emoji: "🥤", image: drinkSeven },
+  { id: "dew",     name: "ديو ٣٣٠ مل",            price: 500,  emoji: "🥤", image: drinkDew },
+  { id: "pepsi-family", name: "بطل بيبسي عائلي",  price: 1000, emoji: "🥤", image: drinkPepsiFamily },
+  { id: "water",   name: "ماء ٥٠٠ مل",            price: 250,  emoji: "💧", image: drinkWater },
+];
+
 export type CartPizza = {
   kind: "pizza";
   pizzaId: string;
