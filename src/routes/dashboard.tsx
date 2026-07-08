@@ -707,7 +707,7 @@ function OrderCard({
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, { bg: string; label: string }> = {
     new: { bg: "bg-[color:var(--tomato)] text-white", label: "جديد" },
-    preparing: { bg: "bg-amber-500 text-white", label: "في الفرن" },
+    preparing: { bg: "bg-sky-600 text-white", label: "في الطريق" },
     out: { bg: "bg-sky-600 text-white", label: "في الطريق" },
     done: { bg: "bg-emerald-600 text-white", label: "تم التسليم" },
     cancelled: { bg: "bg-neutral-400 text-white", label: "ملغى" },
