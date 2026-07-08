@@ -511,6 +511,71 @@ function CheckoutStep(props: {
       <p className="text-[color:var(--ink-muted)] mt-2">أدخل عنوانك وشارك موقعك ليصلك السائق بسرعة.</p>
 
       <form onSubmit={submit} className="mt-8 space-y-5">
+        {saved.length > 0 && (
+          <div className="rounded-2xl border border-[color:var(--line)] bg-white p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Bookmark className="w-4 h-4 text-[color:var(--tomato)]" />
+              <div className="font-bold text-sm">عناويني المحفوظة</div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {saved.map((a) => {
+                const active = selectedSavedId === a.id;
+                return (
+                  <div
+                    key={a.id}
+                    className={
+                      "relative rounded-xl border p-3 text-right cursor-pointer transition-colors " +
+                      (active
+                        ? "border-[color:var(--tomato)] bg-[color:var(--cream)]"
+                        : "border-[color:var(--line)] hover:border-[color:var(--tomato)]")
+                    }
+                    onClick={() => pickSaved(a)}
+                  >
+                    <div className="font-bold text-sm truncate pr-6">
+                      {a.label || a.name}
+                    </div>
+                    <div className="text-xs text-[color:var(--ink-muted)] mt-0.5" dir="ltr">
+                      {a.phone}
+                    </div>
+                    <div className="text-xs text-[color:var(--ink-muted)] mt-1 line-clamp-2">
+                      {a.address}
+                    </div>
+                    {a.latitude != null && a.longitude != null && (
+                      <div className="text-[10px] text-[color:var(--tomato)] mt-1 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> موقع GPS محفوظ
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSaved(a.id);
+                      }}
+                      className="absolute top-2 left-2 w-6 h-6 grid place-items-center rounded-full text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] hover:bg-white"
+                      aria-label="حذف العنوان"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedSavedId(null);
+                setName("");
+                setPhone("");
+                setAddress("");
+                setCoords(null);
+              }}
+              className="mt-3 text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)]"
+            >
+              + إدخال عنوان جديد
+            </button>
+          </div>
+        )}
+
         <Field label="الاسم" required>
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required className="input" placeholder="محمد علي" />
         </Field>
