@@ -540,7 +540,7 @@ function CheckoutStep(props: {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        removeSaved(a.id);
+                        setConfirmDeleteId(a.id);
                       }}
                       className="absolute top-2 left-2 w-6 h-6 grid place-items-center rounded-full text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)] hover:bg-white"
                       aria-label="حذف العنوان"
