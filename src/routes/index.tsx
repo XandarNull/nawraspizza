@@ -407,10 +407,42 @@ function CheckoutStep(props: {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [saved, setSaved] = useState<SavedAddress[]>([]);
+  const [selectedSavedId, setSelectedSavedId] = useState<string | null>(null);
+  const [saveThis, setSaveThis] = useState(true);
+  const [saveLabel, setSaveLabel] = useState("");
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
+    const list = loadAddresses();
+    setSaved(list);
+    // Auto-select most recent address on first arrival
+    if (list.length > 0) {
+      const a = list[0];
+      setSelectedSavedId(a.id);
+      setName(a.name);
+      setPhone(a.phone);
+      setAddress(a.address);
+      if (a.latitude != null && a.longitude != null) {
+        setCoords({ lat: a.latitude, lng: a.longitude });
+      }
+    }
   }, []);
+
+  const pickSaved = (a: SavedAddress) => {
+    setSelectedSavedId(a.id);
+    setName(a.name);
+    setPhone(a.phone);
+    setAddress(a.address);
+    setCoords(a.latitude != null && a.longitude != null ? { lat: a.latitude, lng: a.longitude } : null);
+  };
+
+  const removeSaved = (id: string) => {
+    deleteAddress(id);
+    const next = loadAddresses();
+    setSaved(next);
+    if (selectedSavedId === id) setSelectedSavedId(null);
+  };
 
   const locate = () => {
     if (!("geolocation" in navigator)) {
