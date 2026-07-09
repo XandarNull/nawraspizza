@@ -275,10 +275,11 @@ function MenuStep(props: {
           <span className="text-xs text-[color:var(--ink-muted)]">صغير · وسط · عائلي</span>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {PIZZAS.map((p) => {
+          {PIZZAS.map((p, idx) => {
             const size = sizeById[p.id] ?? "M";
             const price = pizzaPrice(p.id, size);
             const disabled = !isOpen || unavailableSet.has(p.id);
+            const eager = idx < 2;
             return (
               <article
                 key={p.id}
@@ -291,12 +292,15 @@ function MenuStep(props: {
                   <img
                     src={p.image}
                     alt={p.name}
-                    loading="lazy"
+                    loading={eager ? "eager" : "lazy"}
                     decoding="async"
+                    fetchPriority={eager ? "high" : "low"}
+                    sizes="(min-width: 640px) 50vw, 100vw"
                     width={768}
                     height={576}
                     className="w-full h-full object-cover"
                   />
+
                   {disabled && (
                     <div className="absolute inset-0 grid place-items-center bg-black/40">
                       <span className="px-3 py-1 rounded-full bg-white text-[color:var(--ink)] text-xs font-bold">
