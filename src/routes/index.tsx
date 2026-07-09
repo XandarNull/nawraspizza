@@ -44,6 +44,14 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "مطعم بيتزا نورس" },
       { property: "og:description", content: "اطلب بيتزا نورس مع التوصيل." },
     ],
+    links: [
+      {
+        rel: "preload",
+        as: "image",
+        href: assetUrl(nawrasLogo),
+        fetchpriority: "high",
+      },
+    ],
   }),
   component: OrderPage,
 });
@@ -189,6 +197,8 @@ function Header() {
             alt="شعار مطعم بيتزا نورس"
             width={44}
             height={44}
+            fetchPriority="high"
+            decoding="async"
             className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-[color:var(--tomato)]/50 shadow-sm shrink-0"
           />
           <div className="min-w-0">
