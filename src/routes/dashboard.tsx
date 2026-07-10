@@ -735,6 +735,7 @@ function RestaurantControls() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showPizzas, setShowPizzas] = useState(false);
+  const [showPush, setShowPush] = useState(false);
 
   useEffect(() => {
     getState()
@@ -829,12 +830,20 @@ function RestaurantControls() {
           الأصناف غير المتوفرة ({unavailable.length})
         </button>
         <button
+          onClick={() => setShowPush(true)}
+          className="w-full px-3 py-2 rounded-full text-xs font-bold border border-[color:var(--line)] bg-white hover:border-[color:var(--tomato)]"
+        >
+          إرسال إشعار للعملاء
+        </button>
+        <button
           onClick={() => setConfirmDelete(true)}
           className="w-full px-3 py-2 rounded-full text-xs font-bold border border-[color:var(--tomato)] text-[color:var(--tomato)] bg-white hover:bg-[color:var(--tomato)] hover:text-white"
         >
           حذف كل الطلبات (يوم جديد)
         </button>
       </div>
+
+      {showPush && <PushBroadcastModal onClose={() => setShowPush(false)} />}
 
       {showPizzas && (
         <Modal onClose={() => setShowPizzas(false)}>
