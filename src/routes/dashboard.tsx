@@ -943,3 +943,105 @@ function RestaurantControls() {
   );
 }
 
+function PushBroadcastModal({ onClose }: { onClose: () => void }) {
+  const send = useServerFn(sendPushNotification);
+  const count = useServerFn(countPushSubscribers);
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [url, setUrl] = useState("/");
+  const [sending, setSending] = useState(false);
+  const [subs, setSubs] = useState<number | null>(null);
+
+  useEffect(() => {
+    count()
+      .then((r) => setSubs(r.count))
+      .catch(() => setSubs(null));
+  }, [count]);
+
+  const doSend = async () => {
+    if (!title.trim() || !body.trim()) {
+      toast.error("العنوان والنص مطلوبان");
+      return;
+    }
+    setSending(true);
+    try {
+      const r = await send({ data: { title, body, url } });
+      toast.success(`تم الإرسال إلى ${r.sent} جهاز${r.removed ? ` (حذف ${r.removed} منتهي)` : ""}`);
+      setTitle("");
+      setBody("");
+      onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل الإرسال");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Modal onClose={() => !sending && onClose()}>
+      <div className="flex items-center justify-between">
+        <h3 className="font-serif text-xl">إرسال إشعار</h3>
+        <span className="text-xs text-[color:var(--ink-muted)]">
+          {subs === null ? "…" : `${subs} مشترك`}
+        </span>
+      </div>
+      <p className="text-xs text-[color:var(--ink-muted)] mt-1">
+        يصل الإشعار لكل من فعّل الإشعارات على جهازه.
+      </p>
+      <div className="mt-4 space-y-3">
+        <div>
+          <label className="text-xs font-bold text-[color:var(--ink-muted)]">العنوان</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={120}
+            placeholder="مثال: عرض اليوم — بيتزا مجانية!"
+            className="mt-1 w-full px-3 py-2 rounded-xl border border-[color:var(--line)] bg-white text-sm focus:outline-none focus:border-[color:var(--tomato)]"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-[color:var(--ink-muted)]">النص</label>
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            maxLength={400}
+            rows={3}
+            placeholder="اطلب الآن واستمتع بالتوصيل السريع."
+            className="mt-1 w-full px-3 py-2 rounded-xl border border-[color:var(--line)] bg-white text-sm focus:outline-none focus:border-[color:var(--tomato)] resize-none"
+          />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-[color:var(--ink-muted)]">
+            الرابط عند الضغط (اختياري)
+          </label>
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="/"
+            className="mt-1 w-full px-3 py-2 rounded-xl border border-[color:var(--line)] bg-white text-sm focus:outline-none focus:border-[color:var(--tomato)]"
+          />
+        </div>
+      </div>
+      <div className="mt-5 flex gap-2 justify-end">
+        <button
+          onClick={onClose}
+          disabled={sending}
+          className="px-4 py-2 rounded-full text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]"
+        >
+          إلغاء
+        </button>
+        <button
+          onClick={doSend}
+          disabled={sending || subs === 0}
+          className="px-4 py-2 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)] disabled:opacity-60"
+        >
+          {sending ? "جارِ الإرسال…" : "إرسال الآن"}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+
