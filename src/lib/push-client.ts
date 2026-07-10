@@ -2,7 +2,7 @@
 // The VAPID public key is fetched from our own backend so production only needs
 // the server-side VAPID_PUBLIC_KEY value; no separate client env is required.
 
-const VAPID_KEY_STORAGE = "nawras_vapid_public_key_v1";
+const VAPID_KEY_STORAGE = "nawras_vapid_public_key_v2";
 
 async function getVapidPublicKey(): Promise<string> {
   // Always fetch from the server so the key used to subscribe matches the key
@@ -28,6 +28,15 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const arr = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; ++i) arr[i] = raw.charCodeAt(i);
   return arr;
+}
+
+function validateVapidPublicKey(publicKey: string): boolean {
+  try {
+    // P-256 VAPID public keys are uncompressed EC points: 65 bytes.
+    return urlBase64ToUint8Array(publicKey).byteLength === 65;
+  } catch {
+    return false;
+  }
 }
 
 function arrayBufferToBase64Url(buffer: ArrayBuffer | null): string | null {
@@ -104,12 +113,16 @@ export async function subscribeToPush(): Promise<
     return { ok: false, reason: (e as Error).message || "vapid-key-unavailable" };
   }
 
+  if (!validateVapidPublicKey(publicKey)) {
+    return { ok: false, reason: "invalid-vapid-key" };
+  }
+
   const applicationServerKey = urlBase64ToUint8Array(publicKey) as unknown as BufferSource;
 
   let sub = await reg.pushManager.getSubscription();
   const existingKey = arrayBufferToBase64Url(sub?.options.applicationServerKey ?? null);
   const storedKey = getStoredVapidKey();
-  if (sub && ((existingKey && existingKey !== publicKey) || (storedKey && storedKey !== publicKey))) {
+  if (sub && (storedKey !== publicKey || (existingKey !== null && existingKey !== publicKey))) {
     await sub.unsubscribe().catch(() => false);
     sub = null;
   }
