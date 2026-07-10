@@ -1,22 +1,12 @@
-## Fix Vercel `vercel.json` header pattern
+The migration adding `vapid_public_key` and `source_origin` columns to `push_subscriptions` was created in the previous turn but never approved/run, so the production database is still missing those columns — hence Vercel's error.
 
-Vercel's `headers[].source` uses path-to-regexp, which does not support regex non-capturing groups like `(?:...)`. That's why the deploy rejects the second header entry.
+## Fix
 
-### Change
-In `vercel.json`, replace the single regex source with a glob using an extension list:
+Re-issue the pending migration so you can approve and run it:
 
-```json
-{
-  "source": "/:path*.(js|css|woff2|woff|ttf|otf|eot|ico|png|jpg|jpeg|webp|avif|svg|gif)",
-  "headers": [
-    { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-  ]
-}
-```
+1. Add `vapid_public_key text` and `source_origin text` columns to `push_subscriptions` (idempotent with `IF NOT EXISTS`).
+2. Keep existing RLS/grants untouched.
 
-This matches any hashed static asset at any depth (e.g. `/assets/foo.abc123.js`, `/icons/logo.png`) and applies the same immutable long-cache header, without using unsupported regex syntax.
+Once you approve and it runs, redeploy on Vercel (or just retry) and the "column does not exist" error will go away.
 
-No other entries need to change — the existing `/assets/(.*)`, `/sw.js`, `/manifest.webmanifest`, and catch-all `/(.*)` sources are all valid path-to-regexp patterns.
-
-### Why
-Vercel validates every `source` at deploy time. `(?:...)` is a regex-only construct; path-to-regexp expects `(a|b|c)` inside a named param segment. Swapping to `:path*.(ext1|ext2|...)` keeps the intent (long-cache any static asset by extension) while passing validation.
+No code changes needed — the app code already expects these columns.
