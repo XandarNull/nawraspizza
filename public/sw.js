@@ -58,30 +58,49 @@ self.addEventListener("fetch", (event) => {
 // -------- Push notifications --------
 
 self.addEventListener("push", (event) => {
-  let payload = { title: "Nawras Pizza", body: "لديك إشعار جديد", url: "/" };
-  try {
-    if (event.data) {
-      const parsed = event.data.json();
-      payload = { ...payload, ...parsed };
-    }
-  } catch {
-    if (event.data) {
-      payload.body = event.data.text();
-    }
-  }
+  event.waitUntil(
+    (async () => {
+      let payload = {
+        title: "Nawras Pizza",
+        body: "لديك إشعار جديد",
+        url: "/",
+        tag: "nawras-push",
+        requireInteraction: false,
+      };
 
-  const options = {
-    body: payload.body,
-    icon: "/nawras-icon-192.png",
-    badge: "/nawras-icon-192.png",
-    dir: "rtl",
-    lang: "ar",
-    data: { url: payload.url || "/" },
-    tag: payload.tag || "nawras-push",
-    renotify: true,
-  };
+      try {
+        if (event.data) {
+          payload = { ...payload, ...event.data.json() };
+        }
+      } catch {
+        try {
+          if (event.data) payload.body = event.data.text();
+        } catch {
+          /* keep defaults */
+        }
+      }
 
-  event.waitUntil(self.registration.showNotification(payload.title, options));
+      const safeUrl = new URL(payload.url || "/", self.location.origin).href;
+      const tag = payload.tag || "nawras-push";
+
+      // Mobile browsers require persistent notifications shown from the active
+      // service worker registration. Avoid Notification() here entirely.
+      await self.registration.showNotification(payload.title || "Nawras Pizza", {
+        body: payload.body || "لديك إشعار جديد",
+        icon: "/nawras-icon-192.png",
+        badge: "/nawras-icon-192.png",
+        dir: "rtl",
+        lang: "ar",
+        tag,
+        renotify: true,
+        requireInteraction: Boolean(payload.requireInteraction),
+        timestamp: Date.now(),
+        vibrate: [120, 60, 120],
+        data: { url: safeUrl, receivedAt: Date.now() },
+        actions: [{ action: "open", title: "فتح" }],
+      });
+    })(),
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {
