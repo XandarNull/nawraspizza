@@ -67,7 +67,9 @@ export type Database = {
           id: string
           last_seen_at: string
           p256dh: string
+          source_origin: string | null
           user_agent: string | null
+          vapid_public_key: string | null
         }
         Insert: {
           auth: string
@@ -76,7 +78,9 @@ export type Database = {
           id?: string
           last_seen_at?: string
           p256dh: string
+          source_origin?: string | null
           user_agent?: string | null
+          vapid_public_key?: string | null
         }
         Update: {
           auth?: string
@@ -85,7 +89,9 @@ export type Database = {
           id?: string
           last_seen_at?: string
           p256dh?: string
+          source_origin?: string | null
           user_agent?: string | null
+          vapid_public_key?: string | null
         }
         Relationships: []
       }
