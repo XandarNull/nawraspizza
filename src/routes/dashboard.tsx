@@ -951,7 +951,6 @@ function PushBroadcastModal({ onClose }: { onClose: () => void }) {
   const [url, setUrl] = useState("/");
   const [sending, setSending] = useState(false);
   const [subs, setSubs] = useState<number | null>(null);
-  const [enrolling, setEnrolling] = useState(false);
 
   const refreshCount = useCallback(() => {
     count()
@@ -962,28 +961,6 @@ function PushBroadcastModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     refreshCount();
   }, [refreshCount]);
-
-  const enrollThisDevice = async () => {
-    setEnrolling(true);
-    try {
-      const { pushSupported, subscribeToPush } = await import("@/lib/push-client");
-      if (!pushSupported()) {
-        toast.error("هذا المتصفح لا يدعم الإشعارات");
-        return;
-      }
-      const r = await subscribeToPush();
-      if (r.ok) {
-        toast.success("تم تسجيل هذا الجهاز للإشعارات");
-        refreshCount();
-      } else {
-        toast.error(`تعذّر التسجيل: ${r.reason}`);
-      }
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "فشل التسجيل");
-    } finally {
-      setEnrolling(false);
-    }
-  };
 
   const doSend = async () => {
     if (!title.trim() || !body.trim()) {
@@ -1016,14 +993,6 @@ function PushBroadcastModal({ onClose }: { onClose: () => void }) {
       <p className="text-xs text-[color:var(--ink-muted)] mt-1">
         يصل الإشعار لكل من فعّل الإشعارات على جهازه.
       </p>
-      <button
-        type="button"
-        onClick={enrollThisDevice}
-        disabled={enrolling}
-        className="mt-3 w-full px-3 py-2 rounded-xl border border-[color:var(--line)] bg-[color:var(--cream)] text-xs font-bold hover:border-[color:var(--tomato)] disabled:opacity-60"
-      >
-        {enrolling ? "جارِ التسجيل…" : "سجّل هذا الجهاز للإشعارات (للاختبار)"}
-      </button>
       <div className="mt-4 space-y-3">
         <div>
           <label className="text-xs font-bold text-[color:var(--ink-muted)]">العنوان</label>
