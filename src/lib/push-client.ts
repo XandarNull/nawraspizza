@@ -2,7 +2,15 @@
 // The VAPID public key is fetched from our own backend so production only needs
 // the server-side VAPID_PUBLIC_KEY value; no separate client env is required.
 
-const VAPID_KEY_STORAGE = "nawras_vapid_public_key_v2";
+const PUSH_SW_URL = "/sw.js";
+const PUSH_SCOPE = "/";
+const PUSH_SUB_STORAGE = "nawras_push_subscription_v3";
+
+type StoredPushSubscription = {
+  endpoint: string;
+  vapidPublicKey: string;
+  savedAt: string;
+};
 
 async function getVapidPublicKey(): Promise<string> {
   // Always fetch from the server so the key used to subscribe matches the key
@@ -47,17 +55,26 @@ function arrayBufferToBase64Url(buffer: ArrayBuffer | null): string | null {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function getStoredVapidKey(): string | null {
+function getStoredSubscription(): StoredPushSubscription | null {
   try {
-    return localStorage.getItem(VAPID_KEY_STORAGE);
+    const raw = localStorage.getItem(PUSH_SUB_STORAGE);
+    return raw ? (JSON.parse(raw) as StoredPushSubscription) : null;
   } catch {
     return null;
   }
 }
 
-function setStoredVapidKey(value: string) {
+function setStoredSubscription(value: StoredPushSubscription) {
   try {
-    localStorage.setItem(VAPID_KEY_STORAGE, value);
+    localStorage.setItem(PUSH_SUB_STORAGE, JSON.stringify(value));
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearStoredSubscription() {
+  try {
+    localStorage.removeItem(PUSH_SUB_STORAGE);
   } catch {
     /* ignore */
   }
@@ -82,14 +99,34 @@ export function pushStatus(): PushStatus {
 async function getRegistration(): Promise<ServiceWorkerRegistration | null> {
   if (!("serviceWorker" in navigator)) return null;
   try {
-    const reg = await navigator.serviceWorker.getRegistration("/");
-    if (reg) return reg;
-    const next = await navigator.serviceWorker.register("/sw.js");
-    await navigator.serviceWorker.ready.catch(() => next);
-    return next;
+    let reg = await navigator.serviceWorker.getRegistration(PUSH_SCOPE);
+    if (!reg) {
+      reg = await navigator.serviceWorker.register(PUSH_SW_URL, { scope: PUSH_SCOPE });
+    } else {
+      await reg.update().catch(() => undefined);
+    }
+
+    // Per the platform pattern, push subscriptions belong to the active/ready
+    // service worker registration. Waiting here avoids saving subscriptions
+    // against an installing worker that cannot show persistent notifications.
+    const ready = await navigator.serviceWorker.ready;
+    return ready || reg;
   } catch {
     return null;
   }
+}
+
+function shouldReplaceSubscription(
+  sub: PushSubscription,
+  publicKey: string,
+  stored: StoredPushSubscription | null,
+): boolean {
+  const existingKey = arrayBufferToBase64Url(sub.options.applicationServerKey ?? null);
+  if (existingKey && existingKey !== publicKey) return true;
+  if (!stored) return true;
+  if (stored.vapidPublicKey !== publicKey) return true;
+  if (stored.endpoint !== sub.endpoint) return true;
+  return false;
 }
 
 export async function subscribeToPush(): Promise<
@@ -120,11 +157,11 @@ export async function subscribeToPush(): Promise<
   const applicationServerKey = urlBase64ToUint8Array(publicKey) as unknown as BufferSource;
 
   let sub = await reg.pushManager.getSubscription();
-  const existingKey = arrayBufferToBase64Url(sub?.options.applicationServerKey ?? null);
-  const storedKey = getStoredVapidKey();
-  if (sub && (storedKey !== publicKey || (existingKey !== null && existingKey !== publicKey))) {
+  const stored = getStoredSubscription();
+  if (sub && shouldReplaceSubscription(sub, publicKey, stored)) {
     await sub.unsubscribe().catch(() => false);
     sub = null;
+    clearStoredSubscription();
   }
 
   if (!sub) {
@@ -155,6 +192,8 @@ export async function subscribeToPush(): Promise<
         endpoint: json.endpoint,
         p256dh: json.keys.p256dh,
         auth: json.keys.auth,
+        vapid_public_key: publicKey,
+        source_origin: window.location.origin,
         user_agent: navigator.userAgent.slice(0, 300),
       }),
     });
@@ -162,7 +201,11 @@ export async function subscribeToPush(): Promise<
       const errorBody = (await res.json().catch(() => null)) as { error?: string } | null;
       return { ok: false, reason: errorBody?.error || "save-failed" };
     }
-    setStoredVapidKey(publicKey);
+    setStoredSubscription({
+      endpoint: json.endpoint,
+      vapidPublicKey: publicKey,
+      savedAt: new Date().toISOString(),
+    });
   } catch (e) {
     return { ok: false, reason: (e as Error).message || "save-failed" };
   }
@@ -174,4 +217,5 @@ export async function unsubscribeFromPush(): Promise<void> {
   const reg = await getRegistration();
   const sub = await reg?.pushManager.getSubscription();
   await sub?.unsubscribe().catch(() => {});
+  clearStoredSubscription();
 }
