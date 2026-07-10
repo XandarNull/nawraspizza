@@ -5,9 +5,10 @@
 const VAPID_KEY_STORAGE = "nawras_vapid_public_key_v1";
 
 async function getVapidPublicKey(): Promise<string> {
-  const bundled = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
-  if (bundled) return bundled;
-
+  // Always fetch from the server so the key used to subscribe matches the key
+  // used to sign pushes. Bundling VITE_VAPID_PUBLIC_KEY at build time risks a
+  // mismatch with the server's VAPID_PUBLIC_KEY, which causes FCM to accept
+  // the first push then invalidate the endpoint (410 Gone) on subsequent sends.
   const res = await fetch("/api/public/push-vapid-key", {
     method: "GET",
     credentials: "same-origin",
