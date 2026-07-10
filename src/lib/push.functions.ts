@@ -45,7 +45,12 @@ export const savePushSubscription = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.from("push_subscriptions").upsert(
+    const client = supabaseAdmin as unknown as {
+      from: (t: string) => {
+        upsert: (v: unknown, o?: unknown) => Promise<{ error: { message: string } | null }>;
+      };
+    };
+    const { error } = await client.from("push_subscriptions").upsert(
       {
         endpoint: data.endpoint,
         p256dh: data.p256dh,
