@@ -952,15 +952,11 @@ function PushBroadcastModal({ onClose }: { onClose: () => void }) {
   const [sending, setSending] = useState(false);
   const [subs, setSubs] = useState<number | null>(null);
 
-  const refreshCount = useCallback(() => {
+  useEffect(() => {
     count()
       .then((r) => setSubs(r.count))
       .catch(() => setSubs(null));
   }, [count]);
-
-  useEffect(() => {
-    refreshCount();
-  }, [refreshCount]);
 
   const doSend = async () => {
     if (!title.trim() || !body.trim()) {
@@ -970,19 +966,10 @@ function PushBroadcastModal({ onClose }: { onClose: () => void }) {
     setSending(true);
     try {
       const r = await send({ data: { title, body, url } });
-      if (r.sent > 0) {
-        toast.success(`تم الإرسال إلى ${r.sent} جهاز${r.removed ? ` (حذف ${r.removed} منتهي)` : ""}`);
-      } else if (r.failed > 0) {
-        toast.error(`لم يتم تسليم الإشعار. آخر خطأ: ${r.lastError || "فشل غير معروف"}`);
-      } else if (r.removed > 0) {
-        toast.error(`لم يتم الإرسال. تم حذف ${r.removed} اشتراك قديم — افتح التطبيق على الهاتف لتسجيله من جديد.`);
-      } else {
-        toast.error("لا يوجد أي جهاز مسجل حالياً. افتح التطبيق على الهاتف واسمح بالإشعارات أولاً.");
-      }
+      toast.success(`تم الإرسال إلى ${r.sent} جهاز${r.removed ? ` (حذف ${r.removed} منتهي)` : ""}`);
       setTitle("");
       setBody("");
-      refreshCount();
-      if (r.sent > 0) onClose();
+      onClose();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "فشل الإرسال");
     } finally {

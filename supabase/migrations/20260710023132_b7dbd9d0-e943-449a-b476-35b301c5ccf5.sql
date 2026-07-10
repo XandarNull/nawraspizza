@@ -1,1 +1,0 @@
-ALTER TABLE public.push_subscriptions ADD COLUMN IF NOT EXISTS vapid_public_key text; ALTER TABLE public.push_subscriptions ADD COLUMN IF NOT EXISTS source_origin text;

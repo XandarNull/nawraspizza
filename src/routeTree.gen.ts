@@ -15,8 +15,6 @@ import { Route as InstallRouteImport } from './routes/install'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TrackTokenRouteImport } from './routes/track.$token'
-import { Route as ApiPublicPushVapidKeyRouteImport } from './routes/api.public.push-vapid-key'
-import { Route as ApiPublicPushSubscriptionRouteImport } from './routes/api.public.push-subscription'
 
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
@@ -48,17 +46,6 @@ const TrackTokenRoute = TrackTokenRouteImport.update({
   path: '/track/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicPushVapidKeyRoute = ApiPublicPushVapidKeyRouteImport.update({
-  id: '/api/public/push-vapid-key',
-  path: '/api/public/push-vapid-key',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicPushSubscriptionRoute =
-  ApiPublicPushSubscriptionRouteImport.update({
-    id: '/api/public/push-subscription',
-    path: '/api/public/push-subscription',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,8 +54,6 @@ export interface FileRoutesByFullPath {
   '/my-orders': typeof MyOrdersRoute
   '/privacy': typeof PrivacyRoute
   '/track/$token': typeof TrackTokenRoute
-  '/api/public/push-subscription': typeof ApiPublicPushSubscriptionRoute
-  '/api/public/push-vapid-key': typeof ApiPublicPushVapidKeyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -77,8 +62,6 @@ export interface FileRoutesByTo {
   '/my-orders': typeof MyOrdersRoute
   '/privacy': typeof PrivacyRoute
   '/track/$token': typeof TrackTokenRoute
-  '/api/public/push-subscription': typeof ApiPublicPushSubscriptionRoute
-  '/api/public/push-vapid-key': typeof ApiPublicPushVapidKeyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -88,8 +71,6 @@ export interface FileRoutesById {
   '/my-orders': typeof MyOrdersRoute
   '/privacy': typeof PrivacyRoute
   '/track/$token': typeof TrackTokenRoute
-  '/api/public/push-subscription': typeof ApiPublicPushSubscriptionRoute
-  '/api/public/push-vapid-key': typeof ApiPublicPushVapidKeyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -100,8 +81,6 @@ export interface FileRouteTypes {
     | '/my-orders'
     | '/privacy'
     | '/track/$token'
-    | '/api/public/push-subscription'
-    | '/api/public/push-vapid-key'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -110,8 +89,6 @@ export interface FileRouteTypes {
     | '/my-orders'
     | '/privacy'
     | '/track/$token'
-    | '/api/public/push-subscription'
-    | '/api/public/push-vapid-key'
   id:
     | '__root__'
     | '/'
@@ -120,8 +97,6 @@ export interface FileRouteTypes {
     | '/my-orders'
     | '/privacy'
     | '/track/$token'
-    | '/api/public/push-subscription'
-    | '/api/public/push-vapid-key'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -131,8 +106,6 @@ export interface RootRouteChildren {
   MyOrdersRoute: typeof MyOrdersRoute
   PrivacyRoute: typeof PrivacyRoute
   TrackTokenRoute: typeof TrackTokenRoute
-  ApiPublicPushSubscriptionRoute: typeof ApiPublicPushSubscriptionRoute
-  ApiPublicPushVapidKeyRoute: typeof ApiPublicPushVapidKeyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -179,20 +152,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/push-vapid-key': {
-      id: '/api/public/push-vapid-key'
-      path: '/api/public/push-vapid-key'
-      fullPath: '/api/public/push-vapid-key'
-      preLoaderRoute: typeof ApiPublicPushVapidKeyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/push-subscription': {
-      id: '/api/public/push-subscription'
-      path: '/api/public/push-subscription'
-      fullPath: '/api/public/push-subscription'
-      preLoaderRoute: typeof ApiPublicPushSubscriptionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -203,8 +162,6 @@ const rootRouteChildren: RootRouteChildren = {
   MyOrdersRoute: MyOrdersRoute,
   PrivacyRoute: PrivacyRoute,
   TrackTokenRoute: TrackTokenRoute,
-  ApiPublicPushSubscriptionRoute: ApiPublicPushSubscriptionRoute,
-  ApiPublicPushVapidKeyRoute: ApiPublicPushVapidKeyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
