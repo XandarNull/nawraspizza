@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { ShieldCheck, Bell, Cookie } from "lucide-react";
-import { pushSupported, subscribeToPush } from "@/lib/push-client";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { ShieldCheck, Cookie } from "lucide-react";
 
 const CONSENT_KEY = "nawras_privacy_consent_v1";
 
@@ -16,26 +15,23 @@ export function hasPrivacyConsent(): boolean {
 
 export default function PrivacyConsent() {
   const [open, setOpen] = useState(false);
-  const [enablePush, setEnablePush] = useState(true);
   const [busy, setBusy] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     if (!hasPrivacyConsent()) setOpen(true);
   }, []);
 
   if (!open) return null;
+  if (pathname === "/install") return null;
 
-  const accept = async () => {
+  const accept = () => {
     setBusy(true);
     try {
       localStorage.setItem(CONSENT_KEY, "accepted");
       localStorage.setItem(CONSENT_KEY + "_at", new Date().toISOString());
     } catch {
       /* ignore */
-    }
-    if (enablePush && pushSupported()) {
-      // Fire and forget — permission prompt handles UX.
-      subscribeToPush().catch(() => {});
     }
     setBusy(false);
     setOpen(false);
@@ -79,31 +75,9 @@ export default function PrivacyConsent() {
                 ولا تتبّع من طرف ثالث.
               </span>
             </li>
-            <li className="flex items-start gap-2">
-              <Bell className="w-4 h-4 mt-0.5 text-[color:var(--tomato)] shrink-0" />
-              <span>
-                يمكنك تفعيل الإشعارات لمتابعة حالة طلبك والعروض. اختياري تماماً — يمكنك
-                إيقافها لاحقاً من إعدادات جهازك.
-              </span>
-            </li>
           </ul>
 
-          <label className="mt-5 flex items-center gap-3 p-3 rounded-2xl border border-[color:var(--line)] cursor-pointer hover:bg-[color:var(--cream)]">
-            <input
-              type="checkbox"
-              checked={enablePush}
-              onChange={(e) => setEnablePush(e.target.checked)}
-              className="w-5 h-5 accent-[color:var(--tomato)]"
-            />
-            <div className="flex-1">
-              <div className="font-bold text-sm">تفعيل الإشعارات</div>
-              <div className="text-xs text-[color:var(--ink-muted)]">
-                لتصلك تحديثات الطلب والعروض الجديدة
-              </div>
-            </div>
-          </label>
-
-          <p className="text-xs text-[color:var(--ink-muted)] mt-4 leading-relaxed">
+          <p className="text-xs text-[color:var(--ink-muted)] mt-5 leading-relaxed">
             بالمتابعة أنت توافق على{" "}
             <Link
               to="/privacy"
