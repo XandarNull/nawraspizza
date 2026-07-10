@@ -134,6 +134,24 @@ function RootComponent() {
 
   useEffect(() => {
     registerPwa();
+    // Re-sync the push subscription on every load when the user already granted
+    // permission. Push endpoints can rotate or be cleared by the browser; this
+    // silently re-upserts the current subscription into the DB so the admin's
+    // subscriber count stays accurate.
+    if (typeof window === "undefined") return;
+    if (typeof Notification === "undefined") return;
+    if (Notification.permission !== "granted") return;
+    const t = window.setTimeout(() => {
+      import("../lib/push-client")
+        .then(({ pushSupported, subscribeToPush }) => {
+          if (!pushSupported()) return;
+          return subscribeToPush();
+        })
+        .catch(() => {
+          /* silent — nothing user-actionable here */
+        });
+    }, 1500);
+    return () => window.clearTimeout(t);
   }, []);
 
   return (
