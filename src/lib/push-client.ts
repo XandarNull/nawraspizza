@@ -1,15 +1,23 @@
 // Client-side helpers for Web Push subscription.
-// Public VAPID key ships in the client bundle (safe — it's public by design).
-// Prefers VITE_VAPID_PUBLIC_KEY; falls back to a dev default so the app works out of the box.
-// Regenerate keys for production and set VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT
-// on the server, plus VITE_VAPID_PUBLIC_KEY (same public key) on the client.
+// The VAPID public key is fetched from our own backend so production only needs
+// the server-side VAPID_PUBLIC_KEY value; no separate client env is required.
 
-const DEFAULT_PUBLIC_KEY =
-  "BKjyFG2KBg7eRZhY6Pc3bC-H8MQJ9vzPUVnIkDgV7EoGOUoYzXZadlS_AFDujC5S7fVtWXumvAZEGW3IQSHuCZw";
+const VAPID_KEY_STORAGE = "nawras_vapid_public_key_v1";
 
-export function getVapidPublicKey(): string {
-  const v = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined) || DEFAULT_PUBLIC_KEY;
-  return v;
+async function getVapidPublicKey(): Promise<string> {
+  const bundled = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+  if (bundled) return bundled;
+
+  const res = await fetch("/api/public/push-vapid-key", {
+    method: "GET",
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok) throw new Error("vapid-key-unavailable");
+  const data = (await res.json()) as { publicKey?: string };
+  if (!data.publicKey) throw new Error("missing-vapid-key");
+  return data.publicKey;
 }
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -19,6 +27,30 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const arr = new Uint8Array(raw.length);
   for (let i = 0; i < raw.length; ++i) arr[i] = raw.charCodeAt(i);
   return arr;
+}
+
+function arrayBufferToBase64Url(buffer: ArrayBuffer | null): string | null {
+  if (!buffer) return null;
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function getStoredVapidKey(): string | null {
+  try {
+    return localStorage.getItem(VAPID_KEY_STORAGE);
+  } catch {
+    return null;
+  }
+}
+
+function setStoredVapidKey(value: string) {
+  try {
+    localStorage.setItem(VAPID_KEY_STORAGE, value);
+  } catch {
+    /* ignore */
+  }
 }
 
 export function pushSupported(): boolean {
@@ -42,7 +74,9 @@ async function getRegistration(): Promise<ServiceWorkerRegistration | null> {
   try {
     const reg = await navigator.serviceWorker.getRegistration("/");
     if (reg) return reg;
-    return await navigator.serviceWorker.register("/sw.js");
+    const next = await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready.catch(() => next);
+    return next;
   } catch {
     return null;
   }
@@ -62,12 +96,28 @@ export async function subscribeToPush(): Promise<
   const reg = await getRegistration();
   if (!reg) return { ok: false, reason: "no-sw" };
 
+  let publicKey: string;
+  try {
+    publicKey = await getVapidPublicKey();
+  } catch (e) {
+    return { ok: false, reason: (e as Error).message || "vapid-key-unavailable" };
+  }
+
+  const applicationServerKey = urlBase64ToUint8Array(publicKey) as unknown as BufferSource;
+
   let sub = await reg.pushManager.getSubscription();
+  const existingKey = arrayBufferToBase64Url(sub?.options.applicationServerKey ?? null);
+  const storedKey = getStoredVapidKey();
+  if (sub && ((existingKey && existingKey !== publicKey) || (storedKey && storedKey !== publicKey))) {
+    await sub.unsubscribe().catch(() => false);
+    sub = null;
+  }
+
   if (!sub) {
     try {
       sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(getVapidPublicKey()) as unknown as BufferSource,
+        applicationServerKey,
       });
     } catch (e) {
       return { ok: false, reason: (e as Error).message || "subscribe-failed" };
@@ -83,15 +133,22 @@ export async function subscribeToPush(): Promise<
   }
 
   try {
-    const { savePushSubscription } = await import("./push.functions");
-    await savePushSubscription({
-      data: {
+    const res = await fetch("/api/public/push-subscription", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
         endpoint: json.endpoint,
         p256dh: json.keys.p256dh,
         auth: json.keys.auth,
         user_agent: navigator.userAgent.slice(0, 300),
-      },
+      }),
     });
+    if (!res.ok) {
+      const errorBody = (await res.json().catch(() => null)) as { error?: string } | null;
+      return { ok: false, reason: errorBody?.error || "save-failed" };
+    }
+    setStoredVapidKey(publicKey);
   } catch (e) {
     return { ok: false, reason: (e as Error).message || "save-failed" };
   }
