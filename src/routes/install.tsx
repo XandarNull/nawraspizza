@@ -144,12 +144,18 @@ function InstallPage() {
           )}
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center space-y-2">
           <Link
             to="/"
-            className="text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)]"
+            className="block text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)]"
           >
             → متابعة بدون تثبيت
+          </Link>
+          <Link
+            to="/privacy"
+            className="block text-xs text-[color:var(--ink-muted)] hover:text-[color:var(--tomato)]"
+          >
+            سياسة الخصوصية
           </Link>
         </div>
       </main>
