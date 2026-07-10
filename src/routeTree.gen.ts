@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as MyOrdersRouteImport } from './routes/my-orders'
 import { Route as InstallRouteImport } from './routes/install'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TrackTokenRouteImport } from './routes/track.$token'
 
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MyOrdersRoute = MyOrdersRouteImport.update({
   id: '/my-orders',
   path: '/my-orders',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/install': typeof InstallRoute
   '/my-orders': typeof MyOrdersRoute
+  '/privacy': typeof PrivacyRoute
   '/track/$token': typeof TrackTokenRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/install': typeof InstallRoute
   '/my-orders': typeof MyOrdersRoute
+  '/privacy': typeof PrivacyRoute
   '/track/$token': typeof TrackTokenRoute
 }
 export interface FileRoutesById {
@@ -61,19 +69,33 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/install': typeof InstallRoute
   '/my-orders': typeof MyOrdersRoute
+  '/privacy': typeof PrivacyRoute
   '/track/$token': typeof TrackTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/install' | '/my-orders' | '/track/$token'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/install'
+    | '/my-orders'
+    | '/privacy'
+    | '/track/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/install' | '/my-orders' | '/track/$token'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/install'
+    | '/my-orders'
+    | '/privacy'
+    | '/track/$token'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/install'
     | '/my-orders'
+    | '/privacy'
     | '/track/$token'
   fileRoutesById: FileRoutesById
 }
@@ -82,11 +104,19 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   InstallRoute: typeof InstallRoute
   MyOrdersRoute: typeof MyOrdersRoute
+  PrivacyRoute: typeof PrivacyRoute
   TrackTokenRoute: typeof TrackTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/my-orders': {
       id: '/my-orders'
       path: '/my-orders'
@@ -130,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   InstallRoute: InstallRoute,
   MyOrdersRoute: MyOrdersRoute,
+  PrivacyRoute: PrivacyRoute,
   TrackTokenRoute: TrackTokenRoute,
 }
 export const routeTree = rootRouteImport
