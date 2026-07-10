@@ -28,7 +28,9 @@ import {
   setUnavailablePizzas,
   deleteAllOrders,
   type OrderDTO,
+  type OrderDTO,
 } from "@/lib/orders.functions";
+import { sendPushNotification, countPushSubscribers } from "@/lib/push.functions";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
