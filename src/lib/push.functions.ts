@@ -68,7 +68,15 @@ export const savePushSubscription = createServerFn({ method: "POST" })
 export const countPushSubscribers = createServerFn({ method: "GET" }).handler(async () => {
   await requireDashAuth();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { count, error } = await supabaseAdmin
+  const client = supabaseAdmin as unknown as {
+    from: (t: string) => {
+      select: (
+        cols: string,
+        opts?: { count?: "exact"; head?: boolean },
+      ) => Promise<{ count: number | null; error: { message: string } | null }>;
+    };
+  };
+  const { count, error } = await client
     .from("push_subscriptions")
     .select("id", { count: "exact", head: true });
   if (error) throw new Error(error.message);
@@ -100,7 +108,14 @@ export const sendPushNotification = createServerFn({ method: "POST" })
     webpush.setVapidDetails(subject, publicKey, privateKey);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: subs, error } = await supabaseAdmin
+    type SubRow = { id: string; endpoint: string; p256dh: string; auth: string };
+    const client = supabaseAdmin as unknown as {
+      from: (t: string) => {
+        select: (cols: string) => Promise<{ data: SubRow[] | null; error: { message: string } | null }>;
+        delete: () => { in: (col: string, ids: string[]) => Promise<{ error: unknown }> };
+      };
+    };
+    const { data: subs, error } = await client
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth");
     if (error) throw new Error(error.message);
@@ -121,8 +136,8 @@ export const sendPushNotification = createServerFn({ method: "POST" })
         try {
           await webpush.sendNotification(
             {
-              endpoint: s.endpoint as string,
-              keys: { p256dh: s.p256dh as string, auth: s.auth as string },
+              endpoint: s.endpoint,
+              keys: { p256dh: s.p256dh, auth: s.auth },
             },
             payload,
           );
@@ -130,7 +145,7 @@ export const sendPushNotification = createServerFn({ method: "POST" })
         } catch (e) {
           const status = (e as { statusCode?: number }).statusCode;
           if (status === 404 || status === 410) {
-            staleIds.push(s.id as string);
+            staleIds.push(s.id);
             removed++;
           }
         }
@@ -138,7 +153,7 @@ export const sendPushNotification = createServerFn({ method: "POST" })
     );
 
     if (staleIds.length > 0) {
-      await supabaseAdmin.from("push_subscriptions").delete().in("id", staleIds);
+      await client.from("push_subscriptions").delete().in("id", staleIds);
     }
 
     return { sent, removed, total: (subs ?? []).length };
