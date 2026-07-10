@@ -970,7 +970,15 @@ function PushBroadcastModal({ onClose }: { onClose: () => void }) {
     setSending(true);
     try {
       const r = await send({ data: { title, body, url } });
-      toast.success(`تم الإرسال إلى ${r.sent} جهاز${r.removed ? ` (حذف ${r.removed} منتهي)` : ""}`);
+      if (r.sent > 0) {
+        toast.success(`تم الإرسال إلى ${r.sent} جهاز${r.removed ? ` (حذف ${r.removed} منتهي)` : ""}`);
+      } else if (r.failed > 0) {
+        toast.error(`لم يتم تسليم الإشعار. آخر خطأ: ${r.lastError || "فشل غير معروف"}`);
+      } else if (r.removed > 0) {
+        toast.error(`لم يتم الإرسال. تم حذف ${r.removed} اشتراك قديم — افتح التطبيق على الهاتف لتسجيله من جديد.`);
+      } else {
+        toast.error("لا يوجد أي جهاز مسجل حالياً. افتح التطبيق على الهاتف واسمح بالإشعارات أولاً.");
+      }
       setTitle("");
       setBody("");
       refreshCount();
