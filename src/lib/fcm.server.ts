@@ -1,7 +1,9 @@
-// Server-only Firebase Admin helper. Isolating firebase-admin here (and
-// externalizing it in nitro) avoids the "Cannot read properties of
-// undefined (reading 'SDK_VERSION')" error that surfaces when the SDK is
-// bundled by rollup/vite for the serverless build.
+// Server-only Firebase Admin helper. The modular subpaths are externalized
+// in vite.config.ts for the Vercel build, which prevents rollup from
+// bundling firebase-admin's internals and avoids the
+// "Cannot read properties of undefined (reading 'SDK_VERSION')" runtime error.
+// firebase-admin v14 removed the classic default-export namespace API, so we
+// must use the modular subpath imports.
 import { getApps, initializeApp, cert, type ServiceAccount } from "firebase-admin/app";
 import { getMessaging, type Message } from "firebase-admin/messaging";
 
