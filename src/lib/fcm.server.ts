@@ -1,15 +1,16 @@
-// Server-only Firebase Admin helper. Using the classic default import from
-// "firebase-admin" (marked external in vite.config.ts for Vercel) avoids the
-// "Cannot read properties of undefined (reading 'SDK_VERSION')" error caused
-// by rollup/vite bundling the modular subpaths.
-import admin from "firebase-admin";
-
-export type Message = Parameters<ReturnType<typeof admin.messaging>["send"]>[0];
+// Server-only Firebase Admin helper. The modular subpaths are externalized
+// in vite.config.ts for the Vercel build, which prevents rollup from
+// bundling firebase-admin's internals and avoids the
+// "Cannot read properties of undefined (reading 'SDK_VERSION')" runtime error.
+// firebase-admin v14 removed the classic default-export namespace API, so we
+// must use the modular subpath imports.
+import { getApps, initializeApp, cert, type ServiceAccount } from "firebase-admin/app";
+import { getMessaging, type Message } from "firebase-admin/messaging";
 
 let initialized = false;
 
 function ensureApp() {
-  if (initialized || admin.apps.length > 0) {
+  if (initialized || getApps().length > 0) {
     initialized = true;
     return;
   }
@@ -19,13 +20,13 @@ function ensureApp() {
   if (parsed.private_key) {
     parsed.private_key = parsed.private_key.replace(/\\n/g, "\n");
   }
-  admin.initializeApp({
-    credential: admin.credential.cert(parsed as admin.ServiceAccount),
-  });
+  initializeApp({ credential: cert(parsed as ServiceAccount) });
   initialized = true;
 }
 
 export async function sendFcmMessage(message: Message): Promise<string> {
   ensureApp();
-  return admin.messaging().send(message);
+  return getMessaging().send(message);
 }
+
+export type { Message };
