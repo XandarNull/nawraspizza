@@ -9,7 +9,9 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 // Deploy target for Nitro. Vercel sets VERCEL=1 automatically in its build env,
 // so this pins the Vercel preset there while leaving Lovable builds untouched
 // (Lovable forces the Cloudflare preset regardless of this override).
-const nitroPreset = process.env.NITRO_PRESET || (process.env.VERCEL ? "vercel" : undefined);
+const nitroPreset =
+  process.env.NITRO_PRESET ||
+  (process.env.VERCEL ? "vercel" : undefined);
 
 // On Vercel (Node runtime) keep firebase-admin external so rollup doesn't
 // bundle its internals — bundling breaks its version resolution and causes
@@ -19,7 +21,11 @@ const nitroOptions =
     ? {
         preset: "vercel",
         externals: {
-          external: ["firebase-admin", "firebase-admin/app", "firebase-admin/messaging"],
+          external: [
+            "firebase-admin",
+            "firebase-admin/app",
+            "firebase-admin/messaging",
+          ],
         },
       }
     : nitroPreset
@@ -27,16 +33,6 @@ const nitroOptions =
       : true;
 
 export default defineConfig({
-  vite: {
-    ssr: {
-      external: ["firebase-admin", "firebase-admin/app", "firebase-admin/messaging"],
-    },
-    build: {
-      rollupOptions: {
-        external: ["firebase-admin", "firebase-admin/app", "firebase-admin/messaging"],
-      },
-    },
-  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

@@ -1,14 +1,11 @@
-// Server-only Firebase Admin helper. Uses node:module's createRequire to load
-// firebase-admin subpaths dynamically at runtime. This completely prevents
-// Vite, Rollup, and Nitro from statically analyzing or bundling firebase-admin's
-// internals, avoiding the "Cannot read properties of undefined (reading 'SDK_VERSION')" error.
-import { createRequire } from "node:module";
-import type { Message } from "firebase-admin/messaging";
-import type { ServiceAccount } from "firebase-admin/app";
-
-const require = createRequire(import.meta.url);
-const { getApps, initializeApp, cert } = require("firebase-admin/app");
-const { getMessaging } = require("firebase-admin/messaging");
+// Server-only Firebase Admin helper. The modular subpaths are externalized
+// in vite.config.ts for the Vercel build, which prevents rollup from
+// bundling firebase-admin's internals and avoids the
+// "Cannot read properties of undefined (reading 'SDK_VERSION')" runtime error.
+// firebase-admin v14 removed the classic default-export namespace API, so we
+// must use the modular subpath imports.
+import { getApps, initializeApp, cert, type ServiceAccount } from "firebase-admin/app";
+import { getMessaging, type Message } from "firebase-admin/messaging";
 
 let initialized = false;
 
