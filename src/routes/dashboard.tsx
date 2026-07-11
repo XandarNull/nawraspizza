@@ -744,6 +744,7 @@ function RestaurantControls() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showPizzas, setShowPizzas] = useState(false);
+  const [showNotify, setShowNotify] = useState(false);
   
 
   useEffect(() => {
