@@ -856,7 +856,7 @@ function RestaurantControls() {
 
       {showNotify && <NotifyModal onClose={() => setShowNotify(false)} />}
 
-      </div>
+
 
       
 
