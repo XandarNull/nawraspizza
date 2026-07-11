@@ -2,7 +2,7 @@
 // .server.ts module avoids bundler edge cases (e.g. "Cannot read properties
 // of undefined (reading 'SDK_VERSION')") that appear when the modular
 // subpath imports get processed by the client-adjacent bundle graph.
-import admin from "firebase-admin";
+import * as admin from "firebase-admin";
 
 let initialized = false;
 
@@ -17,7 +17,6 @@ function ensureApp() {
   try {
     parsed = JSON.parse(raw);
   } catch {
-    // Some hosts store the JSON with escaped newlines that break JSON.parse.
     parsed = JSON.parse(raw.replace(/\n/g, "\\n"));
   }
   if (parsed.private_key) {
