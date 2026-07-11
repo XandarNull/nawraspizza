@@ -18,7 +18,16 @@ const nitroPreset =
 // "Cannot read properties of undefined (reading 'SDK_VERSION')" at runtime.
 const nitroOptions =
   nitroPreset === "vercel"
-    ? { preset: "vercel", externals: { external: ["firebase-admin"] } }
+    ? {
+        preset: "vercel",
+        externals: {
+          external: [
+            "firebase-admin",
+            "firebase-admin/app",
+            "firebase-admin/messaging",
+          ],
+        },
+      }
     : nitroPreset
       ? { preset: nitroPreset }
       : true;
