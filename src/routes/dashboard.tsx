@@ -15,6 +15,9 @@ import {
   ExternalLink,
   Share2,
   Lock,
+  Bell,
+  Send,
+  Loader2,
 } from "lucide-react";
 import { PIZZAS, DRINKS, formatPrice } from "@/lib/menu";
 import {
@@ -29,6 +32,11 @@ import {
   deleteAllOrders,
   type OrderDTO,
 } from "@/lib/orders.functions";
+import {
+  sendBroadcastNotification,
+  sendOrderUpdateNotification,
+  listActiveOrdersForNotify,
+} from "@/lib/fcm.functions";
 
 
 export const Route = createFileRoute("/dashboard")({
@@ -736,6 +744,7 @@ function RestaurantControls() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showPizzas, setShowPizzas] = useState(false);
+  const [showNotify, setShowNotify] = useState(false);
   
 
   useEffect(() => {
@@ -836,7 +845,18 @@ function RestaurantControls() {
         >
           حذف كل الطلبات (يوم جديد)
         </button>
+        <button
+          onClick={() => setShowNotify(true)}
+          className="w-full px-3 py-2 rounded-full text-xs font-bold bg-[color:var(--ink)] text-white hover:opacity-90 flex items-center justify-center gap-1.5"
+        >
+          <Bell className="w-3.5 h-3.5" />
+          إرسال إشعار
+        </button>
       </div>
+
+      {showNotify && <NotifyModal onClose={() => setShowNotify(false)} />}
+
+
 
       
 
@@ -939,3 +959,189 @@ function RestaurantControls() {
 
 
 
+
+function NotifyModal({ onClose }: { onClose: () => void }) {
+  const broadcast = useServerFn(sendBroadcastNotification);
+  const sendOrder = useServerFn(sendOrderUpdateNotification);
+  const listActive = useServerFn(listActiveOrdersForNotify);
+
+  const [audience, setAudience] = useState<"all" | "order">("all");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [sending, setSending] = useState(false);
+  const [orders, setOrders] = useState<Array<{
+    id: string;
+    customer_name: string;
+    status: string;
+    fcm_token: string | null;
+  }> | null>(null);
+  const [orderId, setOrderId] = useState<string>("");
+
+  useEffect(() => {
+    if (audience !== "order") return;
+    listActive()
+      .then((rows) => setOrders(rows))
+      .catch((e) => toast.error(e instanceof Error ? e.message : "فشل تحميل الطلبات"));
+  }, [audience, listActive]);
+
+  const submit = async () => {
+    if (!title.trim() || !body.trim()) {
+      toast.error("العنوان والمحتوى مطلوبان");
+      return;
+    }
+    setSending(true);
+    try {
+      if (audience === "all") {
+        await broadcast({ data: { title: title.trim(), body: body.trim() } });
+        toast.success("تم إرسال الإشعار لكل المستخدمين");
+      } else {
+        if (!orderId) {
+          toast.error("اختر الطلب");
+          setSending(false);
+          return;
+        }
+        await sendOrder({ data: { orderId, title: title.trim(), body: body.trim() } });
+        toast.success("تم إرسال الإشعار لصاحب الطلب");
+      }
+      onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل الإرسال");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Modal onClose={onClose}>
+      <div className="flex items-center gap-2">
+        <div className="w-10 h-10 rounded-2xl bg-[color:var(--ink)] text-white grid place-items-center">
+          <Bell className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="font-serif text-xl leading-tight">إرسال إشعار</h3>
+          <p className="text-xs text-[color:var(--ink-muted)]">
+            يصل الإشعار إلى تطبيق أندرويد للعملاء
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 space-y-4">
+        <div>
+          <label className="text-xs font-bold text-[color:var(--ink-muted)] block mb-1.5">
+            الجمهور المستهدف
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setAudience("all")}
+              className={
+                "px-3 py-2 rounded-xl text-sm font-bold border transition-colors " +
+                (audience === "all"
+                  ? "bg-[color:var(--ink)] text-white border-[color:var(--ink)]"
+                  : "bg-white text-[color:var(--ink)] border-[color:var(--line)]")
+              }
+            >
+              كل المستخدمين
+            </button>
+            <button
+              type="button"
+              onClick={() => setAudience("order")}
+              className={
+                "px-3 py-2 rounded-xl text-sm font-bold border transition-colors " +
+                (audience === "order"
+                  ? "bg-[color:var(--ink)] text-white border-[color:var(--ink)]"
+                  : "bg-white text-[color:var(--ink)] border-[color:var(--line)]")
+              }
+            >
+              طلب نشط محدد
+            </button>
+          </div>
+        </div>
+
+        {audience === "order" && (
+          <div>
+            <label className="text-xs font-bold text-[color:var(--ink-muted)] block mb-1.5">
+              الطلب
+            </label>
+            {orders === null ? (
+              <div className="text-sm text-[color:var(--ink-muted)]">جارِ التحميل…</div>
+            ) : orders.length === 0 ? (
+              <div className="text-sm text-[color:var(--ink-muted)]">لا توجد طلبات نشطة.</div>
+            ) : (
+              <select
+                value={orderId}
+                onChange={(e) => setOrderId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-[color:var(--line)] bg-white text-sm"
+              >
+                <option value="">— اختر —</option>
+                {orders.map((o) => (
+                  <option key={o.id} value={o.id} disabled={!o.fcm_token}>
+                    {o.customer_name} · {STATUS_LABEL[o.status] ?? o.status}
+                    {!o.fcm_token ? " (بدون رمز إشعار)" : ""}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        )}
+
+        <div>
+          <label className="text-xs font-bold text-[color:var(--ink-muted)] block mb-1.5">
+            العنوان
+          </label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={120}
+            placeholder="مثال: طلبك في الطريق 🚴"
+            className="w-full px-3 py-2 rounded-xl border border-[color:var(--line)] bg-white text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-bold text-[color:var(--ink-muted)] block mb-1.5">
+            نص الإشعار
+          </label>
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            maxLength={500}
+            rows={3}
+            placeholder="اكتب رسالتك هنا…"
+            className="w-full px-3 py-2 rounded-xl border border-[color:var(--line)] bg-white text-sm resize-none"
+          />
+          <div className="text-[10px] text-[color:var(--ink-muted)] text-left mt-1">
+            {body.length}/500
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 flex items-center justify-end gap-2">
+        <button
+          onClick={onClose}
+          disabled={sending}
+          className="px-4 py-2 rounded-full text-sm text-[color:var(--ink-muted)] hover:text-[color:var(--ink)]"
+        >
+          إلغاء
+        </button>
+        <button
+          onClick={submit}
+          disabled={sending}
+          className="px-5 py-2.5 rounded-full bg-[color:var(--tomato)] text-white text-sm font-bold hover:bg-[color:var(--tomato-dark)] disabled:opacity-60 flex items-center gap-2 shadow-lg"
+        >
+          {sending ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              جارِ الإرسال…
+            </>
+          ) : (
+            <>
+              <Send className="w-4 h-4" />
+              إرسال الإشعار
+            </>
+          )}
+        </button>
+      </div>
+    </Modal>
+  );
+}
