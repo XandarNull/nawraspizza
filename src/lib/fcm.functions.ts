@@ -38,8 +38,8 @@ export const sendBroadcastNotification = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     await requireDashAuth();
-    const messaging = await getMessaging();
-    const id = await messaging.send({
+    const { sendFcmMessage } = await import("./fcm.server");
+    const id = await sendFcmMessage({
       notification: { title: data.title, body: data.body },
       android: {
         notification: { channelId: "nawras_fcm_channel", sound: "default" },
@@ -69,8 +69,8 @@ export const sendOrderUpdateNotification = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const row = order as { fcm_token: string | null; tracking_token: string } | null;
     if (!row?.fcm_token) throw new Error("لا يوجد رمز إشعار محفوظ لهذا الطلب");
-    const messaging = await getMessaging();
-    const id = await messaging.send({
+    const { sendFcmMessage } = await import("./fcm.server");
+    const id = await sendFcmMessage({
       notification: { title: data.title, body: data.body },
       data: row.tracking_token ? { tracking_token: row.tracking_token } : {},
       android: {
