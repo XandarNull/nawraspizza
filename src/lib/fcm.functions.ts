@@ -29,20 +29,18 @@ async function requireDashAuth() {
 }
 
 async function getMessaging() {
-  const adminMod = await import("firebase-admin");
-  const admin = (adminMod as unknown as { default?: typeof import("firebase-admin") }).default ?? adminMod;
-  if (!admin.apps.length) {
+  const { getApps, initializeApp, cert } = await import("firebase-admin/app");
+  const { getMessaging: getMsg } = await import("firebase-admin/messaging");
+  if (!getApps().length) {
     const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (!raw) throw new Error("FIREBASE_SERVICE_ACCOUNT not configured");
     const serviceAccount = JSON.parse(raw) as { private_key?: string };
     if (serviceAccount.private_key) {
       serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
     }
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as never),
-    });
+    initializeApp({ credential: cert(serviceAccount as never) });
   }
-  return admin.messaging();
+  return getMsg();
 }
 
 export const sendBroadcastNotification = createServerFn({ method: "POST" })
