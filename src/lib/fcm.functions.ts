@@ -77,7 +77,6 @@ export const sendOrderUpdateNotification = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order, error } = await supabaseAdmin
       .from("orders")
-      // @ts-expect-error fcm_token column added via migration; regenerated types may lag
       .select("fcm_token, tracking_token")
       .eq("id", data.orderId)
       .maybeSingle();
@@ -101,7 +100,6 @@ export const listActiveOrdersForNotify = createServerFn({ method: "GET" }).handl
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("orders")
-    // @ts-expect-error fcm_token column added via migration
     .select("id, customer_name, status, created_at, fcm_token")
     .not("status", "in", "(done,cancelled)")
     .order("created_at", { ascending: false })
