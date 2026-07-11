@@ -28,20 +28,6 @@ async function requireDashAuth() {
   if (!session.data.authed) throw new Error("Unauthorized");
 }
 
-async function getMessaging() {
-  const { getApps, initializeApp, cert } = await import("firebase-admin/app");
-  const { getMessaging: getMsg } = await import("firebase-admin/messaging");
-  if (!getApps().length) {
-    const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
-    if (!raw) throw new Error("FIREBASE_SERVICE_ACCOUNT not configured");
-    const serviceAccount = JSON.parse(raw) as { private_key?: string };
-    if (serviceAccount.private_key) {
-      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
-    }
-    initializeApp({ credential: cert(serviceAccount as never) });
-  }
-  return getMsg();
-}
 
 export const sendBroadcastNotification = createServerFn({ method: "POST" })
   .inputValidator((data: { title: string; body: string }) => {
@@ -52,8 +38,8 @@ export const sendBroadcastNotification = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     await requireDashAuth();
-    const messaging = await getMessaging();
-    const id = await messaging.send({
+    const { sendFcmMessage } = await import("./fcm.server");
+    const id = await sendFcmMessage({
       notification: { title: data.title, body: data.body },
       android: {
         notification: { channelId: "nawras_fcm_channel", sound: "default" },
@@ -83,8 +69,8 @@ export const sendOrderUpdateNotification = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const row = order as { fcm_token: string | null; tracking_token: string } | null;
     if (!row?.fcm_token) throw new Error("لا يوجد رمز إشعار محفوظ لهذا الطلب");
-    const messaging = await getMessaging();
-    const id = await messaging.send({
+    const { sendFcmMessage } = await import("./fcm.server");
+    const id = await sendFcmMessage({
       notification: { title: data.title, body: data.body },
       data: row.tracking_token ? { tracking_token: row.tracking_token } : {},
       android: {

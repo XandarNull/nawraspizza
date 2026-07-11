@@ -13,11 +13,21 @@ const nitroPreset =
   process.env.NITRO_PRESET ||
   (process.env.VERCEL ? "vercel" : undefined);
 
+// On Vercel (Node runtime) keep firebase-admin external so rollup doesn't
+// bundle its internals — bundling breaks its version resolution and causes
+// "Cannot read properties of undefined (reading 'SDK_VERSION')" at runtime.
+const nitroOptions =
+  nitroPreset === "vercel"
+    ? { preset: "vercel", externals: { external: ["firebase-admin"] } }
+    : nitroPreset
+      ? { preset: nitroPreset }
+      : true;
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  nitro: nitroPreset ? { preset: nitroPreset } : true,
+  nitro: nitroOptions,
 });
