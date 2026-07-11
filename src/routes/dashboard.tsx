@@ -845,6 +845,17 @@ function RestaurantControls() {
         >
           حذف كل الطلبات (يوم جديد)
         </button>
+        <button
+          onClick={() => setShowNotify(true)}
+          className="w-full px-3 py-2 rounded-full text-xs font-bold bg-[color:var(--ink)] text-white hover:opacity-90 flex items-center justify-center gap-1.5"
+        >
+          <Bell className="w-3.5 h-3.5" />
+          إرسال إشعار
+        </button>
+      </div>
+
+      {showNotify && <NotifyModal onClose={() => setShowNotify(false)} />}
+
       </div>
 
       
