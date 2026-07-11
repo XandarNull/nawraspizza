@@ -1,14 +1,15 @@
-// Server-only Firebase Admin helper. Isolating firebase-admin here (and
-// externalizing it in nitro) avoids the "Cannot read properties of
-// undefined (reading 'SDK_VERSION')" error that surfaces when the SDK is
-// bundled by rollup/vite for the serverless build.
-import { getApps, initializeApp, cert, type ServiceAccount } from "firebase-admin/app";
-import { getMessaging, type Message } from "firebase-admin/messaging";
+// Server-only Firebase Admin helper. Using the classic default import from
+// "firebase-admin" (marked external in vite.config.ts for Vercel) avoids the
+// "Cannot read properties of undefined (reading 'SDK_VERSION')" error caused
+// by rollup/vite bundling the modular subpaths.
+import admin from "firebase-admin";
+
+export type Message = Parameters<ReturnType<typeof admin.messaging>["send"]>[0];
 
 let initialized = false;
 
 function ensureApp() {
-  if (initialized || getApps().length > 0) {
+  if (initialized || admin.apps.length > 0) {
     initialized = true;
     return;
   }
@@ -18,13 +19,13 @@ function ensureApp() {
   if (parsed.private_key) {
     parsed.private_key = parsed.private_key.replace(/\\n/g, "\n");
   }
-  initializeApp({ credential: cert(parsed as ServiceAccount) });
+  admin.initializeApp({
+    credential: admin.credential.cert(parsed as admin.ServiceAccount),
+  });
   initialized = true;
 }
 
 export async function sendFcmMessage(message: Message): Promise<string> {
   ensureApp();
-  return getMessaging().send(message);
+  return admin.messaging().send(message);
 }
-
-export type { Message };
