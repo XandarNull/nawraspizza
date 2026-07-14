@@ -19,7 +19,6 @@ export type Database = {
           address: string
           created_at: string
           customer_name: string
-          fcm_token: string | null
           id: string
           items: Json
           latitude: number | null
@@ -34,7 +33,6 @@ export type Database = {
           address: string
           created_at?: string
           customer_name: string
-          fcm_token?: string | null
           id?: string
           items: Json
           latitude?: number | null
@@ -49,7 +47,6 @@ export type Database = {
           address?: string
           created_at?: string
           customer_name?: string
-          fcm_token?: string | null
           id?: string
           items?: Json
           latitude?: number | null
