@@ -11,32 +11,9 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 // (Lovable forces the Cloudflare preset regardless of this override).
 const nitroPreset = process.env.NITRO_PRESET || (process.env.VERCEL ? "vercel" : undefined);
 
-// On Vercel (Node runtime) keep firebase-admin external so rollup doesn't
-// bundle its internals — bundling breaks its version resolution and causes
-// "Cannot read properties of undefined (reading 'SDK_VERSION')" at runtime.
-const nitroOptions =
-  nitroPreset === "vercel"
-    ? {
-        preset: "vercel",
-        externals: {
-          external: ["firebase-admin", "firebase-admin/app", "firebase-admin/messaging"],
-        },
-      }
-    : nitroPreset
-      ? { preset: nitroPreset }
-      : true;
+const nitroOptions = nitroPreset ? { preset: nitroPreset } : true;
 
 export default defineConfig({
-  vite: {
-    ssr: {
-      external: ["firebase-admin", "firebase-admin/app", "firebase-admin/messaging"],
-    },
-    build: {
-      rollupOptions: {
-        external: ["firebase-admin", "firebase-admin/app", "firebase-admin/messaging"],
-      },
-    },
-  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
