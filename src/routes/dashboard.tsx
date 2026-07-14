@@ -15,9 +15,6 @@ import {
   ExternalLink,
   Share2,
   Lock,
-  Bell,
-  Send,
-  Loader2,
 } from "lucide-react";
 import { PIZZAS, DRINKS, formatPrice } from "@/lib/menu";
 import {
@@ -32,11 +29,6 @@ import {
   deleteAllOrders,
   type OrderDTO,
 } from "@/lib/orders.functions";
-import {
-  sendBroadcastNotification,
-  sendOrderUpdateNotification,
-  listActiveOrdersForNotify,
-} from "@/lib/fcm.functions";
 
 
 export const Route = createFileRoute("/dashboard")({
