@@ -161,7 +161,7 @@ function OrderPage() {
       {step === "checkout" && <CheckoutStep cart={cart} total={total} onBack={() => setStep("menu")} />}
 
       <footer className="border-t border-[color:var(--line)] mt-16 py-8 text-center text-sm text-[color:var(--ink-muted)]">
-        <div className="mb-2">مطعم بيتزا نورس · مفتوح من الساعة ٣ مساءً حتى الساعة ١ صباحًا</div>
+        <div className="mb-2">مطعم بيتزا نورس · من 3 ضهرا حتى 1 ليلا</div>
         <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-3">
           {BRANCHES.map((b) => (
             <a
