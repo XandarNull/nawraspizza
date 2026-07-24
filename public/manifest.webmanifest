@@ -64,13 +64,6 @@
       "description": "عرض طلباتك السابقة",
       "url": "/my-orders",
       "icons": [{ "src": "/nawras-icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "تثبيت التطبيق",
-      "short_name": "تثبيت",
-      "description": "تثبيت تطبيق نورس بيتزا",
-      "url": "/install",
-      "icons": [{ "src": "/nawras-icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
