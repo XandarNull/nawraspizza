@@ -1,8 +1,13 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "app.xandar.nawraspizza.twa",
-        "sha256_cert_fingerprints": ["28:23:ED:05:E5:EB:28:AF:9A:57:4A:FD:94:CC:C9:13:B3:1B:53:68:AE:C9:B6:DE:22:5D:2A:0A:3B:F6:DA:FA"]
-      }
-    }]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.xandar.nawraspizza.twa",
+      "sha256_cert_fingerprints": [
+        "28:23:ED:05:E5:EB:28:AF:9A:57:4A:FD:94:CC:C9:13:B3:1B:53:68:AE:C9:B6:DE:22:5D:2A:0A:3B:F6:DA:FA",
+        "08:73:58:96:A2:78:BB:8E:2B:D4:50:27:B3:60:4E:2D:0F:03:52:8B:6C:10:AC:AD:5F:34:0D:6F:D3:F1:A6:EC"
+      ]
+    }
+  }
+]
